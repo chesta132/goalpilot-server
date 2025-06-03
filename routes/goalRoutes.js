@@ -17,10 +17,10 @@ router.post("/", async (req, res) => {
 
     const newGoal = new Goal({
       userId: user._id,
-      title: title,
-      description: description,
-      targetDate: targetDate,
-      isPublic: isPublic,
+      title,
+      description,
+      targetDate,
+      isPublic,
     });
     await newGoal.save();
     await User.findByIdAndUpdate(
@@ -79,12 +79,12 @@ router.put("/", async (req, res) => {
     await Goal.findByIdAndUpdate(
       goal._id,
       {
-        title: title,
-        description: description,
-        targetDate: targetDate,
-        progress: progress,
-        status: status,
-        isPublic: isPublic,
+        title,
+        description,
+        targetDate,
+        progress,
+        status,
+        isPublic,
       },
       { new: true, runValidators: true }
     );

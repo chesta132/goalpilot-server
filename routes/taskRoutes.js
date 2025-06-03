@@ -21,10 +21,10 @@ router.post("/", async (req, res) => {
     const newTask = new Task({
       goalId: goal._id,
       task: title,
-      description: description,
-      targetDate: targetDate,
-      difficulty: difficulty,
-      rewardPoints: rewardPoints,
+      description,
+      targetDate,
+      difficulty,
+      rewardPoints,
     });
     await newTask.save();
 
@@ -76,12 +76,12 @@ router.put("/", async (req, res) => {
 
     await Task.findByIdAndUpdate(task._id, {
       task: title,
-      description: description,
-      isCompleted: isCompleted,
-      targetDate: targetDate,
-      difficulty: difficulty,
-      rewardPoints: rewardPoints,
-      completedAt: completedAt,
+      description,
+      isCompleted,
+      targetDate,
+      difficulty,
+      rewardPoints,
+      completedAt,
     });
 
     const goalPopulated = await Goal.findById(goal._id).populate("tasks").exec();

@@ -34,7 +34,7 @@ router.get("/", async (req, res) => {
       delete userResponse.email;
       if (userResponse.goals && userResponse.goals.length > 0) userResponse.goals = userResponse.goals.filter((goal) => goal.isPublic === true);
     }
-    
+
     res.status(200).json(userResponse);
   } catch (err) {
     console.error(err);
@@ -67,5 +67,45 @@ router.delete("/", async (req, res) => {
     errorHandler(err, res);
   }
 });
+
+router.patch("/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status) return res.status(422).json({ message: "Status is Required", code: "MISSING_FIELDS" });
+
+    const validStatuses = ["online", "offline"];
+    if (!validStatuses.includes(status)) {
+      return res.status(422).json({ message: "Invalid Status", code: "INVALID_STATUS" });
+    }
+
+    const lastActive = status === "online" ? new Date() : undefined;
+
+    const user = await User.findByIdAndUpdate(req.user.id, { status, lastActive }, { new: true, runValidators: true });
+    if (!user) return res.status(404).json({ message: "User Not Found", code: "USER_NOT_FOUND" });
+
+    res.status(200).json(generateRes(user));
+  } catch (err) {
+    console.error(err);
+    errorHandler(err, res);
+  }
+});
+
+const OFFLINE_THRESHOLD = 60 * 1000;
+
+setInterval(async () => {
+  try {
+    const now = new Date();
+    const offlineThresholdDate = new Date(now.getTime() - OFFLINE_THRESHOLD);
+
+    const usersToUpdate = await User.find({ lastActive: { $lt: offlineThresholdDate }, status: "online" });
+
+    if (usersToUpdate.length > 0) {
+      await User.updateMany({ _id: { $in: usersToUpdate.map((user) => user._id) } }, { status: "offline" });
+    }
+  } catch (err) {
+    console.error("Error updating offline users:", err);
+    errorHandler(err, res);
+  }
+}, OFFLINE_THRESHOLD);
 
 module.exports = router;
