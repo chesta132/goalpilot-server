@@ -5,6 +5,7 @@ const Goal = require("../models/Goal");
 const Task = require("../models/Task");
 const { errorHandler } = require("../utils/utils");
 
+// Create a new goal
 router.post("/", async (req, res) => {
   try {
     const { title, description, targetDate, isPublic } = req.body;
@@ -37,26 +38,26 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Get all goals for the authenticated user
 router.get("/", async (req, res) => {
   try {
     const { goalId } = req.body;
     if (!goalId) return res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" });
 
-    const goal = await Goal.findById(goalId);
+    const goal = await Goal.findById(goalId).populate("tasks").exec();
     if (!goal) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
     if (req.user.id !== goal.userId.toString()) {
       return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
     }
 
-    const goalPopulated = await Goal.findById(goal._id).populate("tasks").exec();
-    if (!goalPopulated) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
-    res.status(200).json(goalPopulated);
+    res.status(200).json(goal);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal Server Error", code: "SERVER_ERROR", details: err.message });
   }
 });
 
+// Get all goals for the authenticated user
 router.put("/", async (req, res) => {
   try {
     const { goalId, restore, title, description, targetDate, progress, status, isPublic } = req.body;
@@ -98,6 +99,7 @@ router.put("/", async (req, res) => {
   }
 });
 
+// Soft Deleting a goal and all associated tasks
 router.delete("/", async (req, res) => {
   try {
     const { goalId } = req.body;

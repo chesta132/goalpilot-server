@@ -5,12 +5,13 @@ const Goal = require("../models/Goal");
 const Task = require("../models/Task");
 const { errorHandler, generateRes } = require("../utils/utils");
 
+// Read user profile
 router.patch("/", async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: "User Not Found", code: "USER_NOT_FOUND" });
 
-    await User.findOneAndUpdate(user._id, { lastActive: new Date() }, { new: true, runValidators: true });
+    await User.findOneAndUpdate(user._id, { lastActive: new Date(), status: "online" }, { new: true, runValidators: true });
     const userPopulated = await User.findById(user._id).populate({ path: "goals", populate: { path: "tasks" } });
 
     const userResponse = generateRes(userPopulated);
@@ -21,6 +22,7 @@ router.patch("/", async (req, res) => {
   }
 });
 
+// Get user by username for public profile
 router.get("/", async (req, res) => {
   try {
     const { username } = req.body;
@@ -42,6 +44,7 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Delete user and all associated goals and tasks
 router.delete("/", async (req, res) => {
   try {
     const userId = req.user.id;
@@ -68,36 +71,27 @@ router.delete("/", async (req, res) => {
   }
 });
 
+// Update user status to online
 router.patch("/status", async (req, res) => {
   try {
-    const { status } = req.body;
-    if (!status) return res.status(422).json({ message: "Status is Required", code: "MISSING_FIELDS" });
-
-    const validStatuses = ["online", "offline"];
-    if (!validStatuses.includes(status)) {
-      return res.status(422).json({ message: "Invalid Status", code: "INVALID_STATUS" });
-    }
-
-    const lastActive = status === "online" ? new Date() : undefined;
-
-    const user = await User.findByIdAndUpdate(req.user.id, { status, lastActive }, { new: true, runValidators: true });
+    const user = await User.findByIdAndUpdate(req.user.id, { status: "online", lastActive: new Date() }, { new: true, runValidators: true });
     if (!user) return res.status(404).json({ message: "User Not Found", code: "USER_NOT_FOUND" });
 
-    res.status(200).json(generateRes(user));
+    res.status(204).send();
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
   }
 });
 
-const OFFLINE_THRESHOLD = 60 * 1000;
-
+// Update user status to offline if last active time exceeds threshold
+const OFFLINE_THRESHOLD = 60 * 1000; // 1 minute in milliseconds
 setInterval(async () => {
   try {
     const now = new Date();
-    const offlineThresholdDate = new Date(now.getTime() - OFFLINE_THRESHOLD);
+    const lastOnline = new Date(now.getTime() - OFFLINE_THRESHOLD);
 
-    const usersToUpdate = await User.find({ lastActive: { $lt: offlineThresholdDate }, status: "online" });
+    const usersToUpdate = await User.find({ lastActive: { $lt: lastOnline }, status: "online" });
 
     if (usersToUpdate.length > 0) {
       await User.updateMany({ _id: { $in: usersToUpdate.map((user) => user._id) } }, { status: "offline" });

@@ -4,6 +4,7 @@ const Goal = require("../models/Goal");
 const Task = require("../models/Task");
 const { errorHandler, generateReward } = require("../utils/utils");
 
+// Create a new task
 router.post("/", async (req, res) => {
   try {
     const { goalId, title, description, targetDate, difficulty } = req.body;
@@ -43,6 +44,7 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Update an existing task and restore it if needed
 router.put("/", async (req, res) => {
   try {
     const { goalId, taskId, restore, title, description, isCompleted, targetDate, difficulty } = req.body;
@@ -57,7 +59,7 @@ router.put("/", async (req, res) => {
     const task = await Task.findById(taskId);
     if (!task) return res.status(404).json({ message: "Task Not Found", code: "TASK_NOT_FOUND" });
     if (task.goalId.toString() !== goal._id.toString()) {
-      return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
+      return res.status(401).json({ message: "Task Belongs To Another Goal", code: "INVALID_TASK" });
     }
 
     if (restore) {
@@ -93,6 +95,7 @@ router.put("/", async (req, res) => {
   }
 });
 
+// Soft Deleting a task
 router.delete("/", async (req, res) => {
   try {
     const { goalId, taskId } = req.body;
