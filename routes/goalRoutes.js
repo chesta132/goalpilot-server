@@ -111,7 +111,7 @@ router.delete("/", async (req, res) => {
 
     const goal = await Goal.findById(goalId);
     if (!goal) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
-    if (user._id !== goal.userId.toString()) {
+    if (user._id.toString() !== goal.userId.toString()) {
       return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
     }
 
