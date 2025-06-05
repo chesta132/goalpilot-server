@@ -35,12 +35,12 @@ router.post("/signup", async (req, res) => {
 });
 
 router.post("/signin", async (req, res) => {
-  passport.authenticate("local", { failureRedirect: "/login", failureFlash: true, session: false }, (err, user, info) => {
+  passport.authenticate("local", { failureRedirect: "/signin", failureFlash: true, session: false }, (err, user, info) => {
     if (err) {
       return res.status(500).json({ message: "Internal Server Error", code: "SERVER_ERROR", details: err.message });
     }
     if (!user) {
-      return res.status(401).json({ message: info.message, code: "USER_NOT_FOUND" });
+      return res.status(404).json({ message: info.message, code: info.code });
     }
 
     req.login(user, { session: false }, (err) => {
@@ -57,7 +57,8 @@ router.post("/signin", async (req, res) => {
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
 router.get("/google/callback", passport.authenticate("google", { failureRedirect: false }), (req, res) => {
-  res.redirect(process.env.FRONTEND_URL);
+  const token = generateJWT(req.user);
+  res.redirect(`${process.env.FRONTEND_URL}?token=${token}`);
 });
 
 router.patch("/signout", async (req, res) => {

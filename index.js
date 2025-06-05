@@ -1,6 +1,7 @@
 const express = require("express");
 const passport = require("passport");
 const connectDB = require("./services/db");
+const session = require("express-session");
 const cors = require("cors");
 const helmet = require("helmet");
 const { rateLimit } = require("express-rate-limit");
@@ -21,25 +22,32 @@ const limiter = rateLimit({
   limit: 100,
   standardHeaders: true,
   legacyHeaders: false,
-});
+})
 
-app.use(helmet());
-app.use(limiter);
 app.use(
   cors({
     credentials: true,
     origin: process.env.FRONTEND_URL,
   })
 );
-connectDB();
+app.use(
+  session({
+    secret: process.env.SECRET_KEY,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+app.use(helmet());
+app.use(limiter);
 app.use(express.json());
 app.use(passport.initialize());
+connectDB();
 
 app.use("/api/auth", authRoutes);
-app.use("/api/user", passport.authenticate("jwt", { session: false }), authenticateJWT, userRoutes);
-app.use("/api/goal", passport.authenticate("jwt", { session: false }), authenticateJWT, goalRoutes);
-app.use("/api/task", passport.authenticate("jwt", { session: false }), authenticateJWT, taskRoutes);
-app.use("/api/ai", passport.authenticate("jwt", { session: false }), authenticateJWT, aiRoutes);
+app.use("/api/user", authenticateJWT, passport.authenticate("jwt", { session: false }), userRoutes);
+app.use("/api/goal", authenticateJWT, passport.authenticate("jwt", { session: false }), goalRoutes);
+app.use("/api/task", authenticateJWT, passport.authenticate("jwt", { session: false }), taskRoutes);
+app.use("/api/ai", authenticateJWT, passport.authenticate("jwt", { session: false }), aiRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

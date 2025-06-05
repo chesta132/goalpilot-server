@@ -14,12 +14,12 @@ passport.use(
     try {
       const user = await User.findOne({ email });
       if (!user) {
-        return done(null, false, "Incorrect Email or Password");
+        return done(null, false, { message: "Email not registered", code: "EMAIL_NOT_FOUND" });
       }
 
       const passwordValid = await bcrypt.compare(password, user.password);
       if (!passwordValid) {
-        return done(null, false, "Incorrect Password");
+        return done(null, false, { message: "Incorrect Password", code: "INCORRECT_PASSWORD" });
       }
 
       done(null, user);
@@ -54,7 +54,7 @@ passport.use(
     {
       clientID: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_SECRET,
-      callbackURL: process.env.CALLBACK_URL,
+      callbackURL: "/api/auth/google/callback" || process.env.CALLBACK_URL,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -80,3 +80,21 @@ passport.use(
     }
   )
 );
+
+passport.serializeUser((user, done) => {
+  done(null, user._id);
+});
+
+passport.deserializeUser(async (userId, done) => {
+  try {
+    const user = await User.findOne({ _id: userId });
+
+    if (!user) {
+      return done(new Error("User not found"));
+    }
+
+    done(null, user);
+  } catch (error) {
+    done(error);
+  }
+});

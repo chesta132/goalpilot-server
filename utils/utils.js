@@ -10,7 +10,7 @@ const generateRes = (res, isObject = false, email = false) => {
 };
 
 const generateJWT = (user) => {
-  const token = jwt.sign({ id: user._id.toString(), email: user.email }, process.env.SECRET_KEY, { expiresIn: "5d" });
+  const token = jwt.sign({ id: user._id.toString(), email: user.email }, process.env.SECRET_KEY, { expiresIn: "1000" });
   return token;
 };
 
