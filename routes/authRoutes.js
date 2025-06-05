@@ -9,7 +9,12 @@ require("dotenv").config();
 
 router.post("/signup", async (req, res) => {
   try {
-    const { username, email, password, fullName } = req.body;
+    // const { username, email, password, fullName } = req.body;
+    const username = req.body.username.trim();
+    const email = req.body.email.trim();
+    const password = req.body.password.trim();
+    const fullName = req.body.fullName.trim();
+    
     if (!username || !email || !password || !fullName)
       return res.status(422).json({ message: "Username, Email, Password, and Full Name is Required", code: "MISSING_FIELDS" });
     if (await User.findOne({ email: email })) return res.status(460).json({ code: "EMAIL_UNAVAILABLE", message: "Email is already in use" });

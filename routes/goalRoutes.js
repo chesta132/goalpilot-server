@@ -60,6 +60,7 @@ router.get("/", async (req, res) => {
 // Get all goals for the authenticated user
 router.put("/", async (req, res) => {
   try {
+    const user = await User.findById(req.user.id);
     const { goalId, restore, title, description, targetDate, progress, status, isPublic } = req.body;
     if (!goalId) return res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" });
 
@@ -74,6 +75,8 @@ router.put("/", async (req, res) => {
       const restoredGoal = await Goal.findByIdAndUpdate(goal._id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true })
         .populate("tasks")
         .exec();
+      user.goals.push(restoredGoal._id);
+      await user.save();
       return res.status(200).json({ ...restoredGoal.toObject(), notification: "1 Goal And All Tasks Inside Restored" });
     }
 
@@ -102,12 +105,13 @@ router.put("/", async (req, res) => {
 // Soft Deleting a goal and all associated tasks
 router.delete("/", async (req, res) => {
   try {
+    const user = await User.findById(req.user.id);
     const { goalId } = req.body;
     if (!goalId) return res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" });
 
     const goal = await Goal.findById(goalId);
     if (!goal) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
-    if (req.user.id !== goal.userId.toString()) {
+    if (user._id !== goal.userId.toString()) {
       return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
     }
 
@@ -116,6 +120,8 @@ router.delete("/", async (req, res) => {
       await Task.updateMany({ _id: { $in: taskIds } }, { $set: { isRecycled: true, deleteAt: Date.now() + 24 * 60 * 60 * 1000 } });
     }
     await Goal.findByIdAndUpdate(goal._id, { isRecycled: true, deleteAt: Date.now() + 24 * 60 * 60 * 1000 });
+    user.goals = user.goals.filter((goalParam) => goalParam.toString() !== goal._id.toString());
+    await user.save();
     res.status(200).json({ _id: goal._id, notification: "1 Goal And All Tasks Inside Deleted" });
   } catch (err) {
     console.error(err);

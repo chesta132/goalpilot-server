@@ -10,14 +10,15 @@ require("dotenv").config();
 const User = require("../models/User");
 
 passport.use(
-  new LocalStrategy({ usernameField: "email" }, async (email, password, done) => {
+  new LocalStrategy({ usernameField: "email" }, async (e_mail, password, done) => {
     try {
+      const email = e_mail.trim();
       const user = await User.findOne({ email });
       if (!user) {
         return done(null, false, { message: "Email not registered", code: "EMAIL_NOT_FOUND" });
       }
 
-      const passwordValid = await bcrypt.compare(password, user.password);
+      const passwordValid = await bcrypt.compare(password.trim(), user.password);
       if (!passwordValid) {
         return done(null, false, { message: "Incorrect Password", code: "INCORRECT_PASSWORD" });
       }
