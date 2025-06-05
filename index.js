@@ -14,7 +14,7 @@ const goalRoutes = require("./routes/goalRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 
-const { authenticateJWT } = require("./middlewares/authen");
+const { authenticateJWT } = require("./middlewares/authenticateJWT");
 
 const app = express();
 const limiter = rateLimit({
@@ -44,10 +44,10 @@ app.use(passport.initialize());
 connectDB();
 
 app.use("/api/auth", authRoutes);
-app.use("/api/user", authenticateJWT, passport.authenticate("jwt", { session: false }), userRoutes);
-app.use("/api/goal", authenticateJWT, passport.authenticate("jwt", { session: false }), goalRoutes);
-app.use("/api/task", authenticateJWT, passport.authenticate("jwt", { session: false }), taskRoutes);
-app.use("/api/ai", authenticateJWT, passport.authenticate("jwt", { session: false }), aiRoutes);
+app.use("/api/user", authenticateJWT, userRoutes);
+app.use("/api/goal", authenticateJWT, goalRoutes);
+app.use("/api/task", authenticateJWT, taskRoutes);
+app.use("/api/ai", authenticateJWT, aiRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

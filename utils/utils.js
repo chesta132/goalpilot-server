@@ -10,7 +10,7 @@ const generateRes = (res, isObject = false, email = false) => {
 };
 
 const generateJWT = (user) => {
-  const token = jwt.sign({ id: user._id.toString(), email: user.email }, process.env.SECRET_KEY, { expiresIn: "1000" });
+  const token = jwt.sign({ id: user._id.toString(), email: user.email }, process.env.SECRET_KEY, { expiresIn: "5d" });
   return token;
 };
 
@@ -18,10 +18,12 @@ const errorHandler = (err, res) => {
   if (err.name === "ValidationError") {
     res.status(400).json({
       message: err.message,
+      name: "Validation Error",
       code: "VALIDATION_ERROR",
     });
   } else if (err.name === "VersionError") {
     res.status(409).json({
+      name: "Version Error",
       message: "Conflict: This item was modified by another user/process. Please refresh and try again.",
       code: "VERSION_CONFLICT",
     });

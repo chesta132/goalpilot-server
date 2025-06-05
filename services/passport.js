@@ -40,11 +40,11 @@ passport.use(
     async function (jwtPayload, done) {
       try {
         const user = await User.findById(jwtPayload.id);
-        if (!user) return done(null, false, { message: "User Not Found", code: "USER_NOT_FOUND" });
+        if (!user) return done(null, false, { message: "User Not Found", code: "USER_NOT_FOUND", });
         return done(null, user);
       } catch (err) {
         console.error(err);
-        return done(err, false, { message: err.message, code: "VALIDATION_ERROR" });
+        return done(err, false, { message: err.message, code: "VALIDATION_ERROR", });
       }
     }
   )
