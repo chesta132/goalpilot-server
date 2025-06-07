@@ -31,7 +31,7 @@ router.post("/", async (req, res) => {
 
     const updatedGoal = await Goal.findByIdAndUpdate(goal._id, {
       $push: {
-        tasks: newTask._id,
+        tasks: { $each: [newTask._id], $position: 0 },
       },
     }).populate("tasks");
     res.status(201).json({ ...updatedGoal.toObject(), notification: "1 Task Created" });
@@ -73,7 +73,7 @@ router.put("/", async (req, res) => {
       difficulty,
       rewardPoints,
       completedAt,
-    })
+    });
 
     const goalPopulated = await Goal.findById(goal._id).populate("tasks");
     if (!goalPopulated) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
