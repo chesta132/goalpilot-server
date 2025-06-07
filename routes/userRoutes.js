@@ -10,9 +10,15 @@ router.patch("/", async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: "User Not Found", code: "USER_NOT_FOUND" });
+    const goals = await Goal.find({ _id: { $in: user.goals } });
+    const goalsId = new Set(goals.map((goalMap) => goalMap._id));
 
-    await User.findOneAndUpdate(user._id, { lastActive: new Date(), status: "online" }, { new: true, runValidators: true });
-    const userPopulated = await User.findById(user._id).populate({ path: "goals", populate: { path: "tasks" } });
+    const existingGoals = user.goals.filter((userGoal) => goalsId.has(userGoal));
+    const userPopulated = await User.findByIdAndUpdate(
+      user._id,
+      { lastActive: new Date(), status: "online", goals: existingGoals },
+      { new: true, runValidators: true }
+    ).populate({ path: "goals", populate: { path: "tasks" } });
 
     const userResponse = generateRes(userPopulated);
     res.status(200).json(userResponse);

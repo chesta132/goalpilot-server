@@ -37,7 +37,7 @@ router.post("/", async (req, res) => {
       const newTask = await Task.insertMany(newTaskData);
       goal.tasks.push(...newTask.map((task) => task._id));
       await goal.save();
-      const goalPopulated = await Goal.findById(goal._id).populate("tasks").exec();
+      const goalPopulated = await Goal.findById(goal._id).populate("tasks");
       return res.status(200).json({ ...goalPopulated.toObject(), notification: `${newTask.length} Task Created` });
     }
 
@@ -94,7 +94,7 @@ router.post("/", async (req, res) => {
     const newTask = await Task.insertMany(newTaskData);
     goal.tasks.push(...newTask.map((task) => task._id));
     await goal.save();
-    const goalPopulated = await Goal.findById(goal._id).populate("tasks").exec();
+    const goalPopulated = await Goal.findById(goal._id).populate("tasks");
     res.status(200).json({ ...goalPopulated.toObject(), notification: `${newTask.length} Task Created` });
 
     const newAiCache = new AiCache({
