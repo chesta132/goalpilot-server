@@ -70,16 +70,6 @@ router.put("/", async (req, res) => {
       return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
     }
 
-    if (restore) {
-      await Task.updateMany({ _id: { $in: goal.tasks } }, { $set: { isRecycled: false, deleteAt: null } }, { runValidators: true });
-      const restoredGoal = await Goal.findByIdAndUpdate(goal._id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true })
-        .populate("tasks")
-        .exec();
-      user.goals.push(restoredGoal._id);
-      await user.save();
-      return res.status(200).json({ ...restoredGoal.toObject(), notification: "1 Goal And All Tasks Inside Restored" });
-    }
-
     await Goal.findByIdAndUpdate(
       goal._id,
       {
@@ -123,6 +113,25 @@ router.delete("/", async (req, res) => {
     user.goals = user.goals.filter((goalParam) => goalParam.toString() !== goal._id.toString());
     await user.save();
     res.status(200).json({ _id: goal._id, notification: "1 Goal And All Tasks Inside Deleted" });
+  } catch (err) {
+    console.error(err);
+    errorHandler(err, res);
+  }
+});
+
+
+// Restore soft deleted goal
+router.put("/restore", async (req, res) => {
+  try {
+    if (!req.body.goalId) return res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" });
+    const goal = await Goal.findById(req.body.goalId);
+    if (goal.userId.toString() !== res.user.id) return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
+
+    await Task.updateMany({ _id: { $in: goal.tasks } }, { isRecycled: false, deleteAt: null }, { runValidators: true });
+    const updatedGoal = await Goal.findByIdAndUpdate(goal._id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true })
+      .populate("tasks")
+      .exec();
+    res.status(200).json({ ...updatedGoal.toObject(), notification: "1 Goal Restored" });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);

@@ -72,7 +72,7 @@ router.delete("/", async (req, res) => {
 });
 
 // Update user status to online
-router.patch("/status", async (req, res) => {
+router.patch("/heartbeat", async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.user.id, { status: "online", lastActive: new Date() }, { new: true, runValidators: true });
     if (!user) return res.status(404).json({ message: "User Not Found", code: "USER_NOT_FOUND" });

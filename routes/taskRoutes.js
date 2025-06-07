@@ -62,14 +62,6 @@ router.put("/", async (req, res) => {
       return res.status(401).json({ message: "Task Belongs To Another Goal", code: "INVALID_TASK" });
     }
 
-    if (restore) {
-      await Task.findByIdAndUpdate(task._id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true });
-
-      const goalPopulated = await Goal.findById(goal._id).populate("tasks").exec();
-      if (!goalPopulated) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
-      return res.status(200).json({ ...goalPopulated.toObject(), notification: "1 Task Restored" });
-    }
-
     let completedAt = null;
     if (isCompleted === true) {
       completedAt = Date.now();
@@ -118,6 +110,23 @@ router.delete("/", async (req, res) => {
     const goalPopulated = await Goal.findById(goal._id).populate("tasks").exec();
     if (!goalPopulated) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
     res.status(200).json({ ...goalPopulated.toObject(), _id: task._id, notification: "1 Task Deleted" });
+  } catch (err) {
+    console.error(err);
+    errorHandler(err, res);
+  }
+});
+
+// Restore soft deleted task
+router.put("/restore", async (req, res) => {
+  try {
+    if (!req.body.taskId) return res.status(422).json({ message: "Task ID is Required", code: "MISSING_FIELDS" });
+    const task = await Task.findById(req.body.taskId);
+    const goal = await Goal.findById(task.goalId);
+    if (goal.userId.toString() !== res.user.id) return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
+
+    await Task.findByIdAndUpdate(task._id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true });
+    const goalPopulated = await Goal.findById(goal._id).populate('tasks').exec()
+    res.status(200).json({ ...goalPopulated.toObject(), notification: "1 Task Restored" });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
