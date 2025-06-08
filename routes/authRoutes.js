@@ -14,7 +14,7 @@ router.post("/signup", async (req, res) => {
     const email = req.body.email.trim();
     const password = req.body.password.trim();
     const fullName = req.body.fullName.trim();
-    
+
     if (!username || !email || !password || !fullName)
       return res.status(422).json({ message: "Username, Email, Password, and Full Name is Required", code: "MISSING_FIELDS" });
     if (await User.findOne({ email: email })) return res.status(460).json({ code: "EMAIL_UNAVAILABLE", message: "Email is already in use" });
@@ -63,7 +63,7 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
 
 router.get("/google/callback", passport.authenticate("google", { failureRedirect: false }), (req, res) => {
   const token = generateJWT(req.user);
-  res.redirect(`${process.env.FRONTEND_URL}?token=${token}`);
+  res.redirect(`${process.env.FRONTEND_URL}/google/callback/?token=${token}`);
 });
 
 router.patch("/signout", async (req, res) => {

@@ -27,7 +27,9 @@ router.post("/", async (req, res) => {
     await User.findByIdAndUpdate(
       user._id,
       {
-        $push: { goals: newGoal._id },
+        $push: {
+          goals: { $each: [newGoal._id], $position: 0 },
+        },
       },
       { new: true, runValidators: true }
     );
@@ -110,8 +112,7 @@ router.delete("/", async (req, res) => {
       const taskIds = goal.tasks.map((task) => task._id);
       await Task.updateMany({ _id: { $in: taskIds } }, { $set: { isRecycled: true, deleteAt: Date.now() + 24 * 60 * 60 * 1000 } });
     }
-    // 24 * 60 * 60 * 1000
-    await Goal.findByIdAndUpdate(goal._id, { isRecycled: true, deleteAt: Date.now() + 10 * 1000 });
+    await Goal.findByIdAndUpdate(goal._id, { isRecycled: true, deleteAt: Date.now() + 24 * 60 * 60 * 1000 });
     res.status(200).json({ _id: goal._id, notification: "1 Goal And All Tasks Inside Deleted" });
   } catch (err) {
     console.error(err);
