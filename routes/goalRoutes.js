@@ -46,9 +46,9 @@ router.get("/", async (req, res) => {
     const { goalId } = req.body;
     if (!goalId) return res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" });
 
-    // const goal = await Goal.findById(goalId).populate("tasks");
     const tasks = await Task.find({ goalId }).sort({ _id: -1 });
     const tasksId = tasks.map((task) => task._id);
+    
     const goal = await Goal.findByIdAndUpdate(goalId, { tasks: tasksId }).populate("tasks");
     if (!goal) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
     if (req.user.id !== goal.userId.toString()) {
