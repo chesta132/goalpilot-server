@@ -48,6 +48,10 @@ const goalSchema = new mongoose.Schema({
       ref: "Task",
     },
   ],
+  color: {
+    type: String,
+    default: "#66b2ff",
+  },
   isRecycled: {
     type: Boolean,
     required: true,

@@ -9,8 +9,7 @@ require("dotenv").config();
 
 router.post("/signup", async (req, res) => {
   try {
-    // const { username, email, password, fullName } = req.body;
-    const username = req.body.username.trim();
+    const username = req.body.username.trim().toLowerCase();
     const email = req.body.email.trim();
     const password = req.body.password.trim();
     const fullName = req.body.fullName.trim();

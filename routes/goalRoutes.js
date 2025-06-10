@@ -8,7 +8,7 @@ const { errorHandler } = require("../utils/utils");
 // Create a new goal
 router.post("/", async (req, res) => {
   try {
-    const { title, description, targetDate, isPublic } = req.body;
+    const { title, description, targetDate, isPublic, color } = req.body;
     if (!title) return res.status(422).json({ message: "Title is Required", code: "MISSING_FIELDS" });
 
     const user = await User.findById(req.user.id);
@@ -22,6 +22,7 @@ router.post("/", async (req, res) => {
       description,
       targetDate,
       isPublic,
+      color,
     });
     await newGoal.save();
     await User.findByIdAndUpdate(
@@ -48,7 +49,7 @@ router.get("/", async (req, res) => {
 
     const tasks = await Task.find({ goalId }).sort({ _id: -1 });
     const tasksId = tasks.map((task) => task._id);
-    
+
     const goal = await Goal.findByIdAndUpdate(goalId, { tasks: tasksId }).populate("tasks");
     if (!goal) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
     if (req.user.id !== goal.userId.toString()) {
@@ -66,7 +67,7 @@ router.get("/", async (req, res) => {
 router.put("/", async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    const { goalId, restore, title, description, targetDate, progress, status, isPublic } = req.body;
+    const { goalId, color, title, description, targetDate, progress, status, isPublic } = req.body;
     if (!goalId) return res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" });
 
     const goal = await Goal.findById(goalId);
@@ -84,6 +85,7 @@ router.put("/", async (req, res) => {
         progress,
         status,
         isPublic,
+        color,
       },
       { new: true, runValidators: true }
     ).populate("tasks");

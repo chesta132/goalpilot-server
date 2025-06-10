@@ -22,7 +22,7 @@ const limiter = rateLimit({
   limit: 100,
   standardHeaders: true,
   legacyHeaders: false,
-})
+});
 
 app.use(
   cors({
@@ -50,6 +50,8 @@ app.use("/api/task", authenticateJWT, taskRoutes);
 app.use("/api/ai", authenticateJWT, aiRoutes);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log("Server listening on port " + PORT);
+const HOST = process.env.HOST || "0.0.0.0";
+app.listen(PORT, HOST, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Accessible on network via http:${HOST}:${PORT} (or your actual network IP)`);
 });
