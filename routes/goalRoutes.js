@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require("../models/User");
 const Goal = require("../models/Goal");
 const Task = require("../models/Task");
-const { errorHandler } = require("../utils/utils");
+const { errorHandler, generateRes } = require("../utils/utils");
 
 // Create a new goal
 router.post("/", async (req, res) => {
@@ -34,7 +34,8 @@ router.post("/", async (req, res) => {
       },
       { new: true, runValidators: true }
     ).populate({ path: "goals", populate: { path: "tasks" } });
-    res.status(201).json({ ...updatedUser.toObject(), notification: "1 Goal Created" });
+    const generatedRes = generateRes(updatedUser);
+    res.status(201).json({ ...generatedRes, notification: "1 Goal Created" });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
@@ -116,7 +117,7 @@ router.delete("/", async (req, res) => {
     }
     await Goal.findByIdAndUpdate(goal._id, { isRecycled: true, deleteAt: Date.now() + 24 * 60 * 60 * 1000 });
 
-    res.status(200).json({ notification: "1 Goal And All Tasks Inside Deleted" });
+    res.status(200).json({ _id: goal._id, notification: "1 Goal And All Tasks Inside Deleted" });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
@@ -134,7 +135,8 @@ router.put("/restore", async (req, res) => {
     await Goal.findByIdAndUpdate(goal._id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true }).populate("tasks");
 
     const userPopulated = await User.findById(req.user.id).populate({ path: "goals", populate: { path: "tasks" } });
-    res.status(200).json({ ...userPopulated.toObject(), notification: "1 Goal Restored" });
+    const generatedRes = generateRes(userPopulated)
+    res.status(200).json({ ...generatedRes, notification: "1 Goal Restored" });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
