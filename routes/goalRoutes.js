@@ -45,7 +45,7 @@ router.post("/", async (req, res) => {
 // Get all goals for the authenticated user
 router.get("/", async (req, res) => {
   try {
-    const { goalId } = req.body;
+    const { goalId } = req.query;
     if (!goalId) return res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" });
 
     const tasks = await Task.find({ goalId }).sort({ _id: -1 });
@@ -73,7 +73,7 @@ router.put("/", async (req, res) => {
 
     const goal = await Goal.findById(goalId);
     if (!goal) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
-    if (req.user.id !== goal.userId.toString()) {
+    if (user._id !== goal.userId.toString()) {
       return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
     }
 
@@ -135,7 +135,7 @@ router.put("/restore", async (req, res) => {
     await Goal.findByIdAndUpdate(goal._id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true }).populate("tasks");
 
     const userPopulated = await User.findById(req.user.id).populate({ path: "goals", populate: { path: "tasks" } });
-    const generatedRes = generateRes(userPopulated)
+    const generatedRes = generateRes(userPopulated);
     res.status(200).json({ ...generatedRes, notification: "1 Goal Restored" });
   } catch (err) {
     console.error(err);

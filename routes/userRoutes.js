@@ -30,7 +30,7 @@ router.patch("/", async (req, res) => {
 // Get user by username for public profile
 router.get("/", async (req, res) => {
   try {
-    const { username } = req.body;
+    const { username } = req.query;
     if (!username) return res.status(422).json({ message: "Username is Required", code: "MISSING_FIELDS" });
 
     const user = await User.findOne({ username: username }).populate({ path: "goals", populate: { path: "tasks" } });

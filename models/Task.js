@@ -43,6 +43,10 @@ const taskSchema = new mongoose.Schema({
     default: 100,
     max: 800,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
   isRecycled: {
     type: Boolean,
     required: true,
