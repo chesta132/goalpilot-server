@@ -27,8 +27,8 @@ const Ai_cacheSchema = new mongoose.Schema({
       difficulty: {
         type: String,
         required: true,
-        enum: ["Easy", "Medium", "Hard", "Very hard"],
-        default: "Easy",
+        enum: ["easy", "medium", "hard", "very hard"],
+        default: "easy",
       },
     },
   ],
@@ -38,7 +38,7 @@ const Ai_cacheSchema = new mongoose.Schema({
   },
   expiresAt: {
     type: Date,
-    default: () => new Date(Date.now() + 24 * 60 * 60 * 1000),
+    default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   },
 });
 

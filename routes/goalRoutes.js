@@ -25,17 +25,8 @@ router.post("/", async (req, res) => {
       color,
     });
     await newGoal.save();
-    const updatedUser = await User.findByIdAndUpdate(
-      user._id,
-      {
-        $push: {
-          goals: { $each: [newGoal._id], $position: 0 },
-        },
-      },
-      { new: true, runValidators: true }
-    ).populate({ path: "goals", populate: { path: "tasks" } });
-    const generatedRes = generateRes(updatedUser);
-    res.status(201).json({ ...generatedRes, notification: "1 Goal Created" });
+    const generatedRes = generateRes(newGoal);
+    res.status(201).json({ ...generatedRes, notification: `${newGoal.title} Created` });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
@@ -56,7 +47,6 @@ router.get("/", async (req, res) => {
     if (req.user.id !== goal.userId.toString()) {
       return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
     }
-
     res.status(200).json(goal);
   } catch (err) {
     console.error(err);
@@ -91,7 +81,7 @@ router.put("/", async (req, res) => {
       { new: true, runValidators: true }
     ).populate("tasks");
 
-    res.status(200).json({ ...updatedGoal.toObject(), notification: "1 Goal Updated" });
+    res.status(200).json({ ...updatedGoal.toObject(), notification: `${updatedGoal.title} Updated` });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
@@ -117,7 +107,7 @@ router.delete("/", async (req, res) => {
     }
     await Goal.findByIdAndUpdate(goal._id, { isRecycled: true, deleteAt: Date.now() + 24 * 60 * 60 * 1000 });
 
-    res.status(200).json({ _id: goal._id, notification: "1 Goal And All Tasks Inside Deleted" });
+    res.status(200).json({ _id: goal._id, notification: `${goal.title} And ${goal.tasks.length} Tasks Deleted` });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
@@ -134,9 +124,7 @@ router.put("/restore", async (req, res) => {
     await Task.updateMany({ _id: { $in: goal.tasks } }, { isRecycled: false, deleteAt: null }, { runValidators: true });
     await Goal.findByIdAndUpdate(goal._id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true }).populate("tasks");
 
-    const userPopulated = await User.findById(req.user.id).populate({ path: "goals", populate: { path: "tasks" } });
-    const generatedRes = generateRes(userPopulated);
-    res.status(200).json({ ...generatedRes, notification: "1 Goal Restored" });
+    res.status(200).json({ notification: `${goal.title} Restored` });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);

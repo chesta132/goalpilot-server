@@ -7,8 +7,8 @@ const { errorHandler, generateReward } = require("../utils/utils");
 // Create a new task
 router.post("/", async (req, res) => {
   try {
-    const { goalId, title, description, targetDate, difficulty } = req.body;
-    if (!goalId || !title) return res.status(422).json({ message: "Goal ID and Title is Required", code: "MISSING_FIELDS" });
+    const { goalId, task, description, targetDate, difficulty } = req.body;
+    if (!goalId || !task) return res.status(422).json({ message: "Task and Goal ID is Required", code: "MISSING_FIELDS" });
 
     const goal = await Goal.findById(goalId);
     if (!goal) {
@@ -21,7 +21,7 @@ router.post("/", async (req, res) => {
     const rewardPoints = generateReward(req.body);
     const newTask = new Task({
       goalId: goal._id,
-      task: title,
+      task,
       description,
       targetDate,
       difficulty,
@@ -29,22 +29,22 @@ router.post("/", async (req, res) => {
     });
     await newTask.save();
 
-    const updatedGoal = await Goal.findByIdAndUpdate(goal._id, {
+    await Goal.findByIdAndUpdate(goal._id, {
       $push: {
         tasks: { $each: [newTask._id], $position: 0 },
       },
-    }).populate("tasks");
-    res.status(201).json({ ...updatedGoal.toObject(), notification: "1 Task Created" });
+    });
+    res.status(201).json({ notification: `${newTask.task} Created` });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
   }
 });
 
-// Update an existing task and restore it if needed
+// Update an existing task
 router.put("/", async (req, res) => {
   try {
-    const { goalId, taskId, restore, title, description, isCompleted, targetDate, difficulty } = req.body;
+    const { goalId, taskId, title, description, isCompleted, targetDate, difficulty } = req.body;
     if (!goalId || !taskId) return res.status(422).json({ message: "Goal ID and Task ID is Required", code: "MISSING_FIELDS" });
 
     const goal = await Goal.findById(goalId);
@@ -75,9 +75,7 @@ router.put("/", async (req, res) => {
       completedAt,
     });
 
-    const goalPopulated = await Goal.findById(goal._id).populate("tasks");
-    if (!goalPopulated) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
-    res.status(200).json({ ...goalPopulated.toObject(), notification: "1 Task Updated" });
+    res.status(200).json({ notification: `${task.title} Updated` });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
@@ -104,9 +102,7 @@ router.delete("/", async (req, res) => {
 
     await Task.findByIdAndUpdate(task._id, { isRecycled: true, deleteAt: Date.now() + 24 * 60 * 60 * 1000 });
 
-    const goalPopulated = await Goal.findById(goal._id).populate("tasks");
-    if (!goalPopulated) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
-    res.status(200).json({ ...goalPopulated.toObject(), _id: task._id, notification: "1 Task Deleted" });
+    res.status(200).json({ _id: task._id, notification: `${task.title} Deleted` });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
@@ -122,8 +118,7 @@ router.put("/restore", async (req, res) => {
     if (goal.userId.toString() !== res.user.id) return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
 
     await Task.findByIdAndUpdate(task._id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true });
-    const goalPopulated = await Goal.findById(goal._id).populate("tasks");
-    res.status(200).json({ ...goalPopulated.toObject(), notification: "1 Task Restored" });
+    res.status(200).json({ notification: `${task.title} Restored` });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
