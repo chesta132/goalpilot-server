@@ -10,7 +10,7 @@ const taskSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    maxlength: 200,
+    maxlength: 100,
   },
   description: {
     type: String,
