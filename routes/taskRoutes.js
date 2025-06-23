@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Goal = require("../models/Goal");
 const Task = require("../models/Task");
-const { errorHandler, generateReward } = require("../utils/utils");
+const { errorHandler, generateReward, generateRes } = require("../utils/utils");
 
 // Create a new task
 router.post("/", async (req, res) => {
@@ -34,7 +34,9 @@ router.post("/", async (req, res) => {
         tasks: { $each: [newTask._id], $position: 0 },
       },
     });
-    res.status(201).json({ notification: `${newTask.task} Created` });
+
+    const generatedRes = generateRes(newTask);
+    res.status(201).json({ ...generatedRes, notification: `${newTask.task} Created` });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
@@ -44,7 +46,7 @@ router.post("/", async (req, res) => {
 // Update an existing task
 router.put("/", async (req, res) => {
   try {
-    const { goalId, taskId, title, description, isCompleted, targetDate, difficulty } = req.body;
+    const { goalId, taskId, task, description, isCompleted, targetDate, difficulty } = req.body;
     if (!goalId || !taskId) return res.status(422).json({ message: "Goal ID and Task ID is Required", code: "MISSING_FIELDS" });
 
     const goal = await Goal.findById(goalId);
@@ -53,9 +55,9 @@ router.put("/", async (req, res) => {
       return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
     }
 
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ message: "Task Not Found", code: "TASK_NOT_FOUND" });
-    if (task.goalId.toString() !== goal._id.toString()) {
+    const taskUser = await Task.findById(taskId);
+    if (!taskUser) return res.status(404).json({ message: "Task Not Found", code: "TASK_NOT_FOUND" });
+    if (taskUser.goalId.toString() !== goal._id.toString()) {
       return res.status(401).json({ message: "Task Belongs To Another Goal", code: "INVALID_TASK" });
     }
 
@@ -65,8 +67,8 @@ router.put("/", async (req, res) => {
     } else completedAt = null;
     const rewardPoints = generateReward(req.body);
 
-    await Task.findByIdAndUpdate(task._id, {
-      task: title,
+    await Task.findByIdAndUpdate(taskUser._id, {
+      task,
       description,
       isCompleted,
       targetDate,
@@ -75,7 +77,7 @@ router.put("/", async (req, res) => {
       completedAt,
     });
 
-    res.status(200).json({ notification: `${task.title} Updated` });
+    res.status(200).json({ notification: `${taskUser.task} Updated` });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
@@ -85,16 +87,18 @@ router.put("/", async (req, res) => {
 // Soft Deleting a task
 router.delete("/", async (req, res) => {
   try {
-    const { goalId, taskId } = req.body;
-    if ((!goalId, !taskId)) return res.status(422).json({ message: "Goal ID and Task ID is Required", code: "MISSING_FIELDS" });
+    const { taskId } = req.body;
+    if (!taskId) return res.status(422).json({ message: "Task ID is Required", code: "MISSING_FIELDS" });
 
+    const task = await Task.findById(taskId);
+    const goalId = task.goalId;
+    
     const goal = await Goal.findById(goalId);
     if (!goal) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
     if (req.user.id !== goal.userId.toString()) {
       return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
     }
 
-    const task = await Task.findById(taskId);
     if (!task) return res.status(404).json({ message: "Task Not Found", code: "TASK_NOT_FOUND" });
     if (task.goalId.toString() !== goal._id.toString()) {
       return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
@@ -102,7 +106,7 @@ router.delete("/", async (req, res) => {
 
     await Task.findByIdAndUpdate(task._id, { isRecycled: true, deleteAt: Date.now() + 24 * 60 * 60 * 1000 });
 
-    res.status(200).json({ _id: task._id, notification: `${task.title} Deleted` });
+    res.status(200).json({ _id: task._id, notification: `${task.task} Deleted` });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
@@ -112,13 +116,13 @@ router.delete("/", async (req, res) => {
 // Restore soft deleted task
 router.put("/restore", async (req, res) => {
   try {
-    if (!req.body.taskId) return res.status(422).json({ message: "Task ID is Required", code: "MISSING_FIELDS" });
+    if (!req.body?.taskId) return res.status(422).json({ message: "Task ID is Required", code: "MISSING_FIELDS" });
     const task = await Task.findById(req.body.taskId);
     const goal = await Goal.findById(task.goalId);
-    if (goal.userId.toString() !== res.user.id) return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
+    if (goal.userId.toString() !== req.user.id) return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
 
     await Task.findByIdAndUpdate(task._id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true });
-    res.status(200).json({ notification: `${task.title} Restored` });
+    res.status(200).json({ notification: `${task.task} Restored` });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);

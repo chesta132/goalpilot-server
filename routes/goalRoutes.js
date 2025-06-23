@@ -57,13 +57,12 @@ router.get("/", async (req, res) => {
 // Edit goal for the authenticated user
 router.put("/", async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
     const { goalId, color, title, description, targetDate, progress, status, isPublic } = req.body;
     if (!goalId) return res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" });
 
     const goal = await Goal.findById(goalId);
     if (!goal) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
-    if (user._id !== goal.userId.toString()) {
+    if (req.user.id !== goal.userId.toString()) {
       return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
     }
 
@@ -119,7 +118,7 @@ router.put("/restore", async (req, res) => {
   try {
     if (!req.body.goalId) return res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" });
     const goal = await Goal.findById(req.body.goalId);
-    if (goal.userId.toString() !== res.user.id) return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
+    if (goal.userId.toString() !== req.user.id) return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
 
     await Task.updateMany({ _id: { $in: goal.tasks } }, { isRecycled: false, deleteAt: null }, { runValidators: true });
     await Goal.findByIdAndUpdate(goal._id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true }).populate("tasks");

@@ -60,13 +60,13 @@ router.post("/", async (req, res) => {
             properties: {
               task: {
                 type: Type.STRING,
-                description: "A concise description of the task step, max 5-7 words.",
-                maxLength: 30,
+                description: "A concise description of the task step, max 50 characters.",
+                maxLength: 50,
               },
               description: {
                 type: Type.STRING,
-                description: "A more detailed explanation of what needs to be done for this task step, max 30 words.",
-                maxLength: 150,
+                description: "A more detailed explanation of what needs to be done for this task step, max 1000 characters.",
+                maxLength: 1000,
               },
               difficulty: {
                 type: Type.STRING,
@@ -95,15 +95,14 @@ router.post("/", async (req, res) => {
     const newTask = await Task.insertMany(newTaskData);
     goal.tasks.push(...newTask.map((task) => task._id));
     await goal.save();
-    const goalPopulated = await Goal.findById(goal._id).populate("tasks");
     const newAiCache = new AiCache({
-      query: query,
+      query,
       queryHash: queryHashed,
       aiResponse: responseData,
     });
     await newAiCache.save();
 
-    res.status(200).json({ ...goalPopulated.toObject(), notification: `${newTask.length} Tasks Created` });
+    res.status(200).json({ notification: `${newTask.length} Tasks Created` });
   } catch (err) {
     console.error(err);
     errorHandler(err, res);

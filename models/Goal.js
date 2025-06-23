@@ -35,8 +35,8 @@ const goalSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["Active", "Completed", "Paused", "Cancelled"],
-    default: "Active",
+    enum: ["active", "completed", "paused", "canceled", "pending"],
+    default: "active",
   },
   isPublic: {
     type: Boolean,

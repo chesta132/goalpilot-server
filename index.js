@@ -19,7 +19,7 @@ const { authenticateJWT } = require("./middlewares/authenticateJWT");
 const app = express();
 const limiter = rateLimit({
   windowMs: 10 * 60 * 1000,
-  limit: 100,
+  limit: 150,
   standardHeaders: true,
   legacyHeaders: false,
 });
