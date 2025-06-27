@@ -47,7 +47,9 @@ router.get("/", async (req, res) => {
     if (req.user.id !== goal.userId.toString()) {
       return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
     }
-    res.status(200).json(goal);
+    const existingTasks = goal.tasks.filter((task) => !task.isRecycled);
+    const generatedRes = { ...generateRes(goal), tasks: existingTasks };
+    res.status(200).json(generatedRes);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal Server Error", code: "SERVER_ERROR", details: err.message });

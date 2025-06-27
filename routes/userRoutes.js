@@ -10,7 +10,7 @@ router.patch("/", async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: "User Not Found", code: "USER_NOT_FOUND" });
-    
+
     const goals = await Goal.find({ userId: user._id }).sort({ _id: -1 });
     const goalsId = goals.map((goal) => goal._id);
     const updatedUser = await User.findByIdAndUpdate(
@@ -19,7 +19,7 @@ router.patch("/", async (req, res) => {
       { new: true, runValidators: true }
     ).populate({ path: "goals", populate: { path: "tasks" } });
 
-    const userResponse = generateRes(updatedUser);
+    const userResponse = { ...generateRes(updatedUser), goals: updatedUser.goals.filter((goal) => !goal.isRecycled) };
     res.status(200).json(userResponse);
   } catch (err) {
     console.error(err);
@@ -42,7 +42,9 @@ router.get("/", async (req, res) => {
       if (userResponse.goals && userResponse.goals.length > 0) userResponse.goals = userResponse.goals.filter((goal) => goal.isPublic === true);
     }
 
-    res.status(200).json(userResponse);
+    const existingGoals = { ...userResponse, goals: userResponse.goals.filter((goal) => !goal.isRecycled) };
+
+    res.status(200).json(existingGoals);
   } catch (err) {
     console.error(err);
     errorHandler(err, res);
