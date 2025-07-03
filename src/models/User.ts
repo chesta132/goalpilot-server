@@ -1,5 +1,6 @@
 import { UserRole, UserStatus } from "../types/types";
 import mongoose, { Document, Types } from "mongoose";
+import { IGoalDocument } from "./Goal";
 
 export interface IUser {
   username: string;
@@ -11,7 +12,7 @@ export interface IUser {
   createdAt?: Date;
   lastActive?: Date;
   status?: UserStatus;
-  goals?: Types.ObjectId[];
+  goals?: Types.ObjectId[] | IGoalDocument[];
   goalsCompleted?: number;
   level?: number;
   points?: number;

@@ -1,4 +1,5 @@
 import mongoose, { Document, Types } from "mongoose";
+import { ITaskDocument } from "./Task";
 
 type GoalStatus = "active" | "completed" | "paused" | "canceled" | "pending";
 
@@ -11,7 +12,7 @@ export interface IGoal {
   progress: number;
   status: GoalStatus;
   isPublic: boolean;
-  tasks: Types.ObjectId[];
+  tasks: Types.ObjectId[] | ITaskDocument[];
   color: string;
   isRecycled: boolean;
   deleteAt: Date | null;

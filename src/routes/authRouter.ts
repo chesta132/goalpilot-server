@@ -1,4 +1,4 @@
-import { authenticateToken } from "../middlewares/auth";
+import { authMiddleware } from "../middlewares/auth";
 import { signin } from "../controllers/auth/signin";
 import { signout } from "../controllers/auth/signout";
 import { signup } from "../controllers/auth/signup";
@@ -9,7 +9,7 @@ const authRouter = Router();
 
 authRouter.post("/signup", signup as RequestHandler);
 authRouter.post("/signin", signin);
-authRouter.post("/signout", authenticateToken as RequestHandler, signout as RequestHandler);
+authRouter.post("/signout", authMiddleware as RequestHandler, signout as RequestHandler);
 
 authRouter.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 authRouter.get(
