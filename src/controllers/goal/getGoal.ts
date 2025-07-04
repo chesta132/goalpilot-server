@@ -3,6 +3,7 @@ import Task from "../../models/Task";
 import { AuthRequest, ErrorResponse } from "../../types/types";
 import { Response } from "express";
 import { existingTasks } from "../../utils/filterExisting";
+import { sanitizeQuery } from "../../utils/sanitizeQuery";
 
 export const getGoal = async (req: AuthRequest, res: Response) => {
   try {
@@ -15,14 +16,13 @@ export const getGoal = async (req: AuthRequest, res: Response) => {
 
     const rawGoal = await Goal.findByIdAndUpdate(goalId, { tasks: tasksId }, { new: true }).populate("tasks");
     if (!rawGoal) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" } as ErrorResponse);
-    const goal = rawGoal as IGoalDocTasks;
+    const goal = sanitizeQuery(rawGoal) as IGoalDocTasks;
 
-    if (req.user.id !== goal.userId.toString()) {
+    if (req.user.id !== goal.userId) {
       return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" } as ErrorResponse);
     }
 
-    const generatedRes = { ...goal.toObject(), tasks: existingTasks(goal.tasks) };
-    res.status(200).json(generatedRes);
+    res.status(200).json({ ...goal, tasks: existingTasks(goal.tasks) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal Server Error", code: "SERVER_ERROR", details: (err as Error).message });

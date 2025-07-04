@@ -2,7 +2,7 @@ import { Response, Request } from "express";
 import handleError from "../../utils/handleError";
 import User from "../../models/User";
 import bcrypt from "bcrypt";
-import sanitizeQuery from "../../utils/sanitizeQuery";
+import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 import { createAccessToken, createRefreshToken } from "../../utils/tokenUtils";
 import { resAccessToken, resRefreshToken } from "../../utils/resCookie";
 import { ErrorResponse } from "../../types/types";
@@ -32,7 +32,7 @@ export const signup = async (req: Request, res: Response) => {
     res.cookie("accessToken", accessToken, resAccessToken);
     res.cookie("refreshToken", refreshToken, resRefreshToken);
 
-    const userResponse = sanitizeQuery(newUser);
+    const userResponse = sanitizeUserQuery(newUser);
     res.status(201).json(userResponse);
   } catch (error) {
     handleError(error, res);

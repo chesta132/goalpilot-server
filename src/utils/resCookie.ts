@@ -11,5 +11,5 @@ export const resRefreshToken: CookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict",
-  maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+  maxAge: 24 * 7 * 24 * 60 * 60 * 1000, // 6 months
 };

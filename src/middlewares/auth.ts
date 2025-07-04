@@ -1,9 +1,10 @@
 import { Response, NextFunction } from "express";
 import { verifyAccessToken, verifyRefreshToken, createAccessToken } from "../utils/tokenUtils";
-import User from "../models/User";
+import User, { IUserDocument } from "../models/User";
 import { resAccessToken } from "../utils/resCookie";
 import { AuthRequest, ErrorResponse, UserRole } from "../types/types";
 import TokenBlacklist from "../models/TokenBlacklist";
+import { sanitizeQuery } from "../utils/sanitizeQuery";
 
 export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -26,32 +27,30 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
 
     if (!payload) {
       // Check if refresh token exists in database
-      const user = await User.findById(refreshPayload!.userId);
-      if (!user) {
+      const rawUser = await User.findById(refreshPayload!.userId);
+      if (!rawUser) {
         return res.status(401).json({ message: "Invalid refresh token", code: "REFRESH_TOKEN_INVALID" } as ErrorResponse);
       }
+
+      const user = sanitizeQuery(rawUser) as IUserDocument;
       // Generate new access token
       const newAccessToken = createAccessToken({
-        userId: user._id!.toString(),
+        userId: user.id,
         role: user.role || "user",
       });
       // Set new access token in cookie
       res.cookie("accessToken", newAccessToken, resAccessToken);
 
-      user.id = user.id.toString();
-      user._id = user._id!.toString();
       req.user = user;
       return next();
     }
 
-    const user = await User.findById(payload.userId);
-    if (!user) {
+    const rawUser = await User.findById(payload.userId);
+    if (!rawUser) {
       return res.status(404).json({ message: "User not found", code: "USER_NOT_FOUND" } as ErrorResponse);
     }
 
-    user.id = user.id.toString();
-    user._id = user._id!.toString();
-
+    const user = sanitizeQuery(rawUser) as IUserDocument;
     req.user = user;
     next();
   } catch (error) {

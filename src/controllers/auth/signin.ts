@@ -1,6 +1,6 @@
 import { Response, Request, NextFunction } from "express";
 import passport from "passport";
-import sanitizeQuery from "../../utils/sanitizeQuery";
+import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 import { createAccessToken, createRefreshToken } from "../../utils/tokenUtils";
 import { resAccessToken, resRefreshToken } from "../../utils/resCookie";
 import { IUserDocument } from "../../models/User";
@@ -28,7 +28,7 @@ export const signin = async (req: Request, res: Response, next: NextFunction) =>
         res.cookie("accessToken", accessToken, resAccessToken);
         res.cookie("refreshToken", refreshToken, resRefreshToken);
 
-        const userResponse = sanitizeQuery(user);
+        const userResponse = sanitizeUserQuery(user);
         res.status(200).json(userResponse);
       });
     }

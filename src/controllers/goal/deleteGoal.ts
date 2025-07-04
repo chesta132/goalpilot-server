@@ -3,6 +3,7 @@ import Task from "../../models/Task";
 import { AuthRequest, ErrorResponse } from "../../types/types";
 import { Response } from "express";
 import handleError from "../../utils/handleError";
+import { sanitizeQuery } from "../../utils/sanitizeQuery";
 
 export const deleteGoal = async (req: AuthRequest, res: Response) => {
   try {
@@ -12,9 +13,9 @@ export const deleteGoal = async (req: AuthRequest, res: Response) => {
 
     const rawGoal = await Goal.findById(goalId);
     if (!rawGoal) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" } as ErrorResponse);
-    const goal = rawGoal as IGoalDocument;
+    const goal = sanitizeQuery(rawGoal) as IGoalDocument;
 
-    if (user.id !== goal.userId.toString()) {
+    if (user.id !== goal.userId) {
       return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" } as ErrorResponse);
     }
 

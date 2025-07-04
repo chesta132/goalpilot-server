@@ -1,9 +1,9 @@
 import Goal from "../../models/Goal";
 import User, { IUserDocGoalsAndTasks } from "../../models/User";
-import { AuthRequest } from "../../types/types";
+import { AuthRequest, ErrorResponse } from "../../types/types";
 import { Response } from "express";
 import handleError from "../../utils/handleError";
-import sanitizeQuery from "../../utils/sanitizeQuery";
+import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 import { existingGoalsAndTasks } from "../../utils/filterExisting";
 
 export const getUser = async (req: AuthRequest, res: Response) => {
@@ -17,8 +17,9 @@ export const getUser = async (req: AuthRequest, res: Response) => {
       { lastActive: new Date(), status: "online", goals: goalsId },
       { new: true, runValidators: true }
     ).populate({ path: "goals", populate: { path: "tasks" } });
+    if (!updatedUser) return res.json({ message: "User Not Found", code: "USER_NOT_FOUND" } as ErrorResponse);
 
-    const sanitizedQuery: IUserDocGoalsAndTasks = sanitizeQuery(updatedUser);
+    const sanitizedQuery: IUserDocGoalsAndTasks = sanitizeUserQuery(updatedUser);
 
     const userResponse = { ...sanitizedQuery, goals: existingGoalsAndTasks(sanitizedQuery.goals) };
     res.status(200).json(userResponse);
