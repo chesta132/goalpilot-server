@@ -6,7 +6,8 @@ import { heartbeat } from "../controllers/user/heartbeat";
 import { authMiddleware } from "../middlewares/auth";
 export const userRouter = Router();
 
-userRouter.patch("/", authMiddleware as RequestHandler, getUser as RequestHandler);
-userRouter.get("/", authMiddleware as RequestHandler, getProfile as RequestHandler);
-userRouter.delete("/", authMiddleware as RequestHandler, deleteUser as RequestHandler);
-userRouter.patch("/heartbeat", authMiddleware as RequestHandler, heartbeat as RequestHandler);
+userRouter.use(authMiddleware as RequestHandler)
+userRouter.patch("/", getUser as RequestHandler);
+userRouter.get("/", getProfile as RequestHandler);
+userRouter.delete("/", deleteUser as RequestHandler);
+userRouter.patch("/heartbeat", heartbeat as RequestHandler);

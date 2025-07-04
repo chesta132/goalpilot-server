@@ -20,7 +20,7 @@ export interface IGoal {
 
 export interface IGoalDocument extends IGoal, Document {}
 
-export interface IGoalDocTasks extends IGoalDocument {
+export interface IGoalDocTasks extends Omit<IGoalDocument, "tasks"> {
   tasks: ITaskDocument[];
 }
 

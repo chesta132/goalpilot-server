@@ -15,7 +15,7 @@ authRouter.get("/google", passport.authenticate("google", { scope: ["profile", "
 authRouter.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/signin", failureFlash: false, failureMessage: false }),
-  googleCallback
+  googleCallback as RequestHandler
 );
 
 export default authRouter;

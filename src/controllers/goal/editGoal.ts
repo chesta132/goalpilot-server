@@ -1,0 +1,38 @@
+import Goal, { IGoal, IGoalDocument } from "../../models/Goal";
+import { AuthRequest, ErrorResponse } from "../../types/types";
+import { Response } from "express";
+import handleError from "../../utils/handleError";
+
+export const editGoal = async (req: AuthRequest, res: Response) => {
+  try {
+    const { goalId, color, title, description, targetDate, progress, status, isPublic }: IGoal & { goalId: string } = req.body;
+    if (!goalId) return res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" } as ErrorResponse);
+
+    const rawGoal = await Goal.findById(goalId);
+    if (!rawGoal) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" } as ErrorResponse);
+    const goal = rawGoal as IGoalDocument;
+
+    if (req.user.id !== goal.userId.toString()) {
+      return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" } as ErrorResponse);
+    }
+
+    const updatedGoal = await Goal.findByIdAndUpdate(
+      goal._id,
+      {
+        title,
+        description,
+        targetDate,
+        progress,
+        status,
+        isPublic,
+        color,
+      },
+      { new: true, runValidators: true }
+    ).populate("tasks");
+
+    res.status(200).json({ ...updatedGoal!.toObject(), notification: `${updatedGoal!.title} Updated` });
+  } catch (err) {
+    console.error(err);
+    handleError(err, res);
+  }
+};

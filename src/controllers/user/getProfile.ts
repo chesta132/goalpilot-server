@@ -14,7 +14,7 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
     const user = await User.findOne({ username: username }).populate({ path: "goals", populate: { path: "tasks" } });
     if (!user) return res.status(404).json({ message: "User Not Found", code: "USER_NOT_FOUND" } as ErrorResponse);
 
-    const sanitizedQuery: IUserDocGoalsAndTasks = sanitizeQuery(user);
+    const sanitizedQuery: Omit<IUserDocGoalsAndTasks, 'email'> & { email?: string } = sanitizeQuery(user);
 
     if (sanitizedQuery._id !== req.user.id) {
       delete sanitizedQuery.email;

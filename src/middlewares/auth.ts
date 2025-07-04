@@ -37,6 +37,9 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
       });
       // Set new access token in cookie
       res.cookie("accessToken", newAccessToken, resAccessToken);
+
+      user.id = user.id.toString();
+      user._id = user._id!.toString();
       req.user = user;
       return next();
     }
@@ -45,6 +48,9 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
     if (!user) {
       return res.status(404).json({ message: "User not found", code: "USER_NOT_FOUND" } as ErrorResponse);
     }
+
+    user.id = user.id.toString();
+    user._id = user._id!.toString();
 
     req.user = user;
     next();

@@ -3,33 +3,33 @@ import mongoose, { Document, Types } from "mongoose";
 import { IGoalDocument } from "./Goal";
 import { ITaskDocument } from "./Task";
 
-export interface IUser {
+export type TUser = {
   username: string;
-  email?: string;
-  password?: string;
-  googleId?: string;
+  email: string;
+  password: string;
+  googleId: string;
   fullName: string;
-  role?: UserRole;
-  createdAt?: Date;
-  lastActive?: Date;
-  status?: UserStatus;
-  goals?: Types.ObjectId[] | IGoalDocument[];
-  goalsCompleted?: number;
-  level?: number;
-  points?: number;
-  tasksCompleted?: number;
-  sessions?: number;
-  refreshToken?: string;
-}
+  role: UserRole;
+  createdAt: Date;
+  lastActive: Date;
+  status: UserStatus;
+  goals: Types.ObjectId[] | IGoalDocument[];
+  goalsCompleted: number;
+  level: number;
+  points: number;
+  tasksCompleted: number;
+  sessions: number;
+  refreshToken: string;
+};
 
-export interface IUserDocument extends IUser, Document {}
+export interface IUserDocument extends TUser, Document {}
 
-export interface IUserDocGoals extends IUserDocument {
+export interface IUserDocGoals extends Omit<IUserDocument, "goals"> {
   goals: IGoalDocument[];
 }
 
-export interface IUserDocGoalsAndTasks extends IUserDocument {
-  goals: (IGoalDocument & { tasks: ITaskDocument[] })[];
+export interface IUserDocGoalsAndTasks extends Omit<IUserDocument, "goals"> {
+  goals: (Omit<IGoalDocument, "tasks"> & { tasks: ITaskDocument[] })[];
 }
 
 const UserSchema = new mongoose.Schema<IUserDocument>({

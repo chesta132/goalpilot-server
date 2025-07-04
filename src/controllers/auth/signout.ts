@@ -8,7 +8,7 @@ import handleError from "../../utils/handleError";
 
 export const signout = async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findOneAndUpdate(req.user._id, { lastActive: Date.now(), status: "offline" }, { new: true, runValidators: true });
+    const user = await User.findOneAndUpdate(req.user.id, { lastActive: Date.now(), status: "offline" }, { new: true, runValidators: true });
 
     const verifiedPayload = verifyRefreshToken(req.cookies?.refreshToken);
     if (!verifiedPayload) {
