@@ -1,10 +1,11 @@
 import { UserRole, UserStatus } from "../types/types";
 import mongoose, { Document, Types } from "mongoose";
 import { IGoalDocument } from "./Goal";
+import { ITaskDocument } from "./Task";
 
 export interface IUser {
   username: string;
-  email: string;
+  email?: string;
   password?: string;
   googleId?: string;
   fullName: string;
@@ -22,6 +23,14 @@ export interface IUser {
 }
 
 export interface IUserDocument extends IUser, Document {}
+
+export interface IUserDocGoals extends IUserDocument {
+  goals: IGoalDocument[];
+}
+
+export interface IUserDocGoalsAndTasks extends IUserDocument {
+  goals: (IGoalDocument & { tasks: ITaskDocument[] })[];
+}
 
 const UserSchema = new mongoose.Schema<IUserDocument>({
   username: {

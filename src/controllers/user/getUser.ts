@@ -1,14 +1,14 @@
-import Goal, { IGoalDocument } from "../../models/Goal";
-import User from "../../models/User";
-import { AuthRequest, ErrorResponse } from "../../types/types";
+import Goal from "../../models/Goal";
+import User, { IUserDocGoalsAndTasks } from "../../models/User";
+import { AuthRequest } from "../../types/types";
 import { Response } from "express";
 import handleError from "../../utils/handleError";
 import sanitizeQuery from "../../utils/sanitizeQuery";
+import { existingGoalsAndTasks } from "../../utils/filterExisting";
 
 export const getUser = async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ message: "User Not Found", code: "USER_NOT_FOUND" } as ErrorResponse);
+    const user = req.user;
 
     const goals = await Goal.find({ userId: user._id }).sort({ _id: -1 });
     const goalsId = goals.map((goal) => goal._id);
@@ -18,7 +18,9 @@ export const getUser = async (req: AuthRequest, res: Response) => {
       { new: true, runValidators: true }
     ).populate({ path: "goals", populate: { path: "tasks" } });
 
-    const userResponse = { ...sanitizeQuery(updatedUser), goals: updatedUser!.goals!.filter((goal) => !(goal as IGoalDocument).isRecycled) };
+    const sanitizedQuery: IUserDocGoalsAndTasks = sanitizeQuery(updatedUser);
+
+    const userResponse = { ...sanitizedQuery, goals: existingGoalsAndTasks(sanitizedQuery.goals) };
     res.status(200).json(userResponse);
   } catch (err) {
     console.error(err);

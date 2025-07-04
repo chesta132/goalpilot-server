@@ -20,6 +20,10 @@ export interface IGoal {
 
 export interface IGoalDocument extends IGoal, Document {}
 
+export interface IGoalDocTasks extends IGoalDocument {
+  tasks: ITaskDocument[];
+}
+
 const goalSchema = new mongoose.Schema<IGoalDocument>({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
