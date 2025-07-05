@@ -6,7 +6,8 @@ import handleError from "../../utils/handleError";
 export const createGoal = async (req: AuthRequest, res: Response) => {
   try {
     const { title, description, targetDate, isPublic, color }: IGoal = req.body;
-    if (!title) return res.status(422).json({ message: "Title is Required", code: "MISSING_FIELDS" } as ErrorResponse);
+    if (!title || !description)
+      return res.status(422).json({ message: "Title and description is required", code: "MISSING_FIELDS" } as ErrorResponse);
 
     const user = req.user;
 

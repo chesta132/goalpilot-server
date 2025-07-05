@@ -3,6 +3,7 @@ import { ErrorResponse } from "../types/types";
 
 export default function handleError(err: unknown, res: Response) {
   if (err instanceof Error) {
+    console.error("Error found:\n", err);
     if (err && err.name === "ValidationError") {
       res.status(400).json({
         message: err.message,

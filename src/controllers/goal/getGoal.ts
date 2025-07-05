@@ -4,6 +4,7 @@ import { AuthRequest, ErrorResponse } from "../../types/types";
 import { Response } from "express";
 import { existingTasks } from "../../utils/filterExisting";
 import { sanitizeQuery } from "../../utils/sanitizeQuery";
+import handleError from "../../utils/handleError";
 
 export const getGoal = async (req: AuthRequest, res: Response) => {
   try {
@@ -25,6 +26,6 @@ export const getGoal = async (req: AuthRequest, res: Response) => {
     res.status(200).json({ ...goal, tasks: existingTasks(goal.tasks) });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Internal Server Error", code: "SERVER_ERROR", details: (err as Error).message });
+    return handleError(err, res);
   }
 };

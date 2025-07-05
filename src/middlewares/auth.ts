@@ -5,6 +5,7 @@ import { resAccessToken } from "../utils/resCookie";
 import { AuthRequest, ErrorResponse, UserRole } from "../types/types";
 import TokenBlacklist from "../models/TokenBlacklist";
 import { sanitizeQuery } from "../utils/sanitizeQuery";
+import handleError from "../utils/handleError";
 
 export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -54,7 +55,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
     req.user = user;
     next();
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Eror", code: "SERVER_ERROR", details: (error as Error).message } as ErrorResponse);
+    handleError(error, res);
   }
 };
 
