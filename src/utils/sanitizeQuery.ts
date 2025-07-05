@@ -1,4 +1,5 @@
-import { Document, isValidObjectId } from "mongoose";
+import mongoose, { Document, isValidObjectId } from "mongoose";
+import { IUserDocGoalsAndTasks } from "../models/User";
 
 export const traverseAndSanitize = (data: any, mongo = true): any => {
   if (mongo && !data?._id && !Array.isArray(data)) {
@@ -47,16 +48,27 @@ export const traverseCreateId = (data: any, mongo = true): any => {
   if (data?._id) return { id: data._id, ...data };
 };
 
-export const sanitizeQuery = <T extends Document<any, any, any>>(queryData: T) => {
+export const sanitizeQuery = <T extends Document<any, any, any> | Document<any, any, any>[]>(queryData: T) => {
+  if (Array.isArray(queryData)) {
+    const sanitizedData = queryData.map((queryDT) => {
+      const data = queryDT.toObject();
+      return traverseCreateId(traverseAndSanitize(data));
+    });
+    return sanitizedData;
+  }
+
   const data = queryData.toObject();
   const sanitizedData = traverseCreateId(traverseAndSanitize(data));
   return sanitizedData;
 };
 
-export const sanitizeUserQuery = <T extends Document<any, any, any>>(queryData: T, email = false) => {
-  const data = sanitizeQuery(queryData);
+export const sanitizeUserQuery = <T extends Document<any, any, any>, Z extends Partial<IUserDocGoalsAndTasks>>(queryData: T, isGuest = false) => {
+  const data: Z = sanitizeQuery(queryData);
   delete data.password;
   delete data.googleId;
-  if (email) delete data.email;
+  if (isGuest) {
+    delete data.email;
+    if (data.goals && data.goals.length > 0) data.goals = data.goals.filter((goal) => goal.isPublic);
+  }
   return data;
 };

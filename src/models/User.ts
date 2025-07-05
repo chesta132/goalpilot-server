@@ -1,5 +1,5 @@
 import { UserRole, UserStatus } from "../types/types";
-import mongoose, { Document, Types } from "mongoose";
+import mongoose, { Document, ObjectId } from "mongoose";
 import { IGoalDocument } from "./Goal";
 import { ITaskDocument } from "./Task";
 
@@ -13,7 +13,7 @@ export type TUser = {
   createdAt: Date;
   lastActive: Date;
   status: UserStatus;
-  goals: Types.ObjectId[] | IGoalDocument[];
+  goals: ObjectId[] | IGoalDocument[];
   goalsCompleted: number;
   level: number;
   points: number;

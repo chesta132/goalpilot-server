@@ -1,13 +1,14 @@
-import { AuthRequest, ErrorResponse } from "../../types/types";
+import { AuthRequest } from "../../types/types";
 import { Response } from "express";
 import handleError from "../../utils/handleError";
 import User from "../../models/User";
 import { resUserNotFound } from "../../utils/resUtils";
+import { updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
 export const heartbeat = async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findByIdAndUpdate(req.user.id, { status: "online", lastActive: new Date() }, { new: true, runValidators: true });
-    if (!user) return resUserNotFound(res)
+    const user = await updateByIdAndSanitize(User, req.user.id, { status: "online", lastActive: new Date() }, { new: true, runValidators: true });
+    if (!user) return resUserNotFound(res);
     res.status(204).send();
   } catch (err) {
     handleError(err, res);

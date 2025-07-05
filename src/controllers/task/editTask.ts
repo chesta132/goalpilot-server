@@ -1,24 +1,22 @@
 import { AuthRequest } from "../../types/types";
 import { Response } from "express";
 import handleError from "../../utils/handleError";
-import Goal, { IGoalDocTasks } from "../../models/Goal";
+import Goal from "../../models/Goal";
 import { resGoalNotFound, resInvalidAuth, resMissingFields, resTaskNotFound } from "../../utils/resUtils";
-import Task, { ITaskDocument } from "../../models/Task";
-import { sanitizeQuery } from "../../utils/sanitizeQuery";
+import Task from "../../models/Task";
 import { generateReward } from "../../utils/levelingUtils";
+import { findByIdAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
 export const editTask = async (req: AuthRequest, res: Response) => {
   try {
     const { taskId, task, description, isCompleted, targetDate, difficulty } = req.body;
     if (!taskId) return resMissingFields(res, "Task id");
 
-    const rawTaskUser = await Task.findById(taskId);
-    if (!rawTaskUser) return resTaskNotFound(res);
-    const taskUser = sanitizeQuery(rawTaskUser) as ITaskDocument;
+    const taskUser = await findByIdAndSanitize(Task, taskId);
+    if (!taskUser) return resTaskNotFound(res);
 
-    const rawGoal = await Goal.findById(taskUser.goalId);
-    if (!rawGoal) return resGoalNotFound(res);
-    const goal = sanitizeQuery(rawGoal) as IGoalDocTasks;
+    const goal = await findByIdAndSanitize(Goal, taskUser.goalId);
+    if (!goal) return resGoalNotFound(res);
 
     if (req.user.id !== goal.userId) {
       return resInvalidAuth(res);
@@ -26,19 +24,24 @@ export const editTask = async (req: AuthRequest, res: Response) => {
 
     let completedAt = null;
     if (isCompleted === true && !taskUser.isCompleted) {
-      completedAt = Date.now();
+      completedAt = new Date();
     }
     const rewardPoints = generateReward(req.body);
 
-    await Task.findByIdAndUpdate(taskUser._id, {
-      task,
-      description,
-      isCompleted,
-      targetDate,
-      difficulty,
-      rewardPoints,
-      completedAt,
-    });
+    await updateByIdAndSanitize(
+      Task,
+      taskUser.id,
+      {
+        task,
+        description,
+        isCompleted,
+        targetDate,
+        difficulty,
+        rewardPoints,
+        completedAt,
+      },
+      { new: true, runValidators: true }
+    );
 
     res.status(200).json({ notification: `${taskUser.task} Updated` });
   } catch (err) {

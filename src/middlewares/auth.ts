@@ -1,12 +1,12 @@
 import { Response, NextFunction } from "express";
 import { verifyAccessToken, verifyRefreshToken, createAccessToken } from "../utils/tokenUtils";
-import User, { IUserDocument } from "../models/User";
+import User from "../models/User";
 import { resAccessToken } from "../utils/resCookie";
-import { AuthRequest, ErrorResponse, UserRole } from "../types/types";
+import { AuthRequest, UserRole } from "../types/types";
 import TokenBlacklist from "../models/TokenBlacklist";
-import { sanitizeQuery } from "../utils/sanitizeQuery";
 import handleError from "../utils/handleError";
 import { resInvalidRefToken, resInvalidRole, resTokenBlacklisted, resUserNotFound } from "../utils/resUtils";
+import { findByIdAndSanitize } from "../utils/mongooseUtils";
 
 export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -29,12 +29,11 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
 
     if (!payload) {
       // Check if refresh token exists in database
-      const rawUser = await User.findById(refreshPayload!.userId);
-      if (!rawUser) {
+      const user = await findByIdAndSanitize(User, refreshPayload.userId as string);
+      if (!user) {
         return resInvalidRefToken(res);
       }
 
-      const user = sanitizeQuery(rawUser) as IUserDocument;
       // Generate new access token
       const newAccessToken = createAccessToken({
         userId: user.id,
@@ -47,12 +46,11 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
       return next();
     }
 
-    const rawUser = await User.findById(payload.userId);
-    if (!rawUser) {
+    const user = await findByIdAndSanitize(User, payload.userId as string);
+    if (!user) {
       return resUserNotFound(res);
     }
 
-    const user = sanitizeQuery(rawUser) as IUserDocument;
     req.user = user;
     next();
   } catch (error) {

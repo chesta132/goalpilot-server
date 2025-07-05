@@ -2,11 +2,11 @@ import { Response, Request } from "express";
 import handleError from "../../utils/handleError";
 import User from "../../models/User";
 import bcrypt from "bcrypt";
-import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 import { createAccessToken, createRefreshToken } from "../../utils/tokenUtils";
 import { resAccessToken, resRefreshToken } from "../../utils/resCookie";
 import { ErrorResponse } from "../../types/types";
 import { resMissingFields } from "../../utils/resUtils";
+import { createAndSanitize } from "../../utils/mongooseUtils";
 
 export const signup = async (req: Request, res: Response) => {
   try {
@@ -20,7 +20,7 @@ export const signup = async (req: Request, res: Response) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await User.create({
+    const newUser = await createAndSanitize(User, {
       username: username,
       email: email,
       password: hashedPassword,
@@ -32,8 +32,7 @@ export const signup = async (req: Request, res: Response) => {
     res.cookie("accessToken", accessToken, resAccessToken);
     res.cookie("refreshToken", refreshToken, resRefreshToken);
 
-    const userResponse = sanitizeUserQuery(newUser);
-    res.status(201).json(userResponse);
+    res.status(201).json(newUser);
   } catch (error) {
     handleError(error, res);
   }

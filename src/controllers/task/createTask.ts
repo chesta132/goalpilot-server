@@ -2,10 +2,10 @@ import Goal from "../../models/Goal";
 import Task from "../../models/Task";
 import { AuthRequest } from "../../types/types";
 import { Response } from "express";
-import { sanitizeQuery } from "../../utils/sanitizeQuery";
 import handleError from "../../utils/handleError";
 import { generateReward } from "../../utils/levelingUtils";
 import { resGoalNotFound, resInvalidAuth, resMissingFields } from "../../utils/resUtils";
+import { createAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
 export const createTask = async (req: AuthRequest, res: Response) => {
   try {
@@ -21,7 +21,7 @@ export const createTask = async (req: AuthRequest, res: Response) => {
     }
 
     const rewardPoints = generateReward(req.body);
-    const newTask = await Task.create({
+    const newTask = await createAndSanitize(Task, {
       goalId: goal._id,
       task,
       description,
@@ -30,14 +30,18 @@ export const createTask = async (req: AuthRequest, res: Response) => {
       rewardPoints,
     });
 
-    await Goal.findByIdAndUpdate(goal._id, {
-      $push: {
-        tasks: { $each: [newTask._id], $position: 0 },
+    await updateByIdAndSanitize(
+      Goal,
+      goal.id,
+      {
+        $push: {
+          tasks: { $each: [newTask._id], $position: 0 },
+        },
       },
-    });
+      { new: true, runValidators: true }
+    );
 
-    const sanitizedRes = sanitizeQuery(newTask);
-    res.status(201).json({ ...sanitizedRes, notification: `${newTask.task} Created` });
+    res.status(201).json({ ...newTask, notification: `${newTask.task} Created` });
   } catch (err) {
     handleError(err, res);
   }

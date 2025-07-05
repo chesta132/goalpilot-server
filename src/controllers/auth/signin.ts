@@ -5,12 +5,13 @@ import { createAccessToken, createRefreshToken } from "../../utils/tokenUtils";
 import { resAccessToken, resRefreshToken } from "../../utils/resCookie";
 import { IUserDocument } from "../../models/User";
 import handleError from "../../utils/handleError";
+import { ErrorResponse } from "../../types/types";
 
 export const signin = async (req: Request, res: Response, next: NextFunction) => {
   passport.authenticate(
     "local",
     { failureRedirect: "/signin", failureFlash: true, session: false },
-    (err: Error, user: IUserDocument, info: { message: string; code: string }) => {
+    (err: Error, user: IUserDocument, info: ErrorResponse) => {
       if (err) {
         return handleError(err, res);
       }

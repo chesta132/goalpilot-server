@@ -1,29 +1,25 @@
-import User, { IUserDocGoalsAndTasks } from "../../models/User";
+import User from "../../models/User";
 import { AuthRequest } from "../../types/types";
 import { Response } from "express";
 import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
-import { IGoalDocument } from "../../models/Goal";
 import handleError from "../../utils/handleError";
 import { existingGoalsAndTasks } from "../../utils/filterExisting";
 import { resMissingFields, resUserNotFound } from "../../utils/resUtils";
+import { findOneAndSanitize } from "../../utils/mongooseUtils";
 
 export const getProfile = async (req: AuthRequest, res: Response) => {
   try {
     const { username } = req.query;
     if (!username) return resMissingFields(res, "Username");
 
-    const user = await User.findOne({ username: username }).populate({ path: "goals", populate: { path: "tasks" } });
+    const user = await findOneAndSanitize(User, { username }, { path: "goals", populate: { path: "tasks" } });
     if (!user) return resUserNotFound(res);
 
-    const isOwner = user._id!.toString() === req.user.id;
-    const sanitizedQuery: Omit<IUserDocGoalsAndTasks, "email"> & { email?: string } = sanitizeUserQuery(user, !isOwner);
+    const isOwner = user.id === req.user.id;
+    const sanitizedQuery = sanitizeUserQuery(user, !isOwner);
 
-    if (!isOwner) {
-      if (sanitizedQuery.goals && sanitizedQuery.goals.length > 0)
-        sanitizedQuery.goals = sanitizedQuery.goals.filter((goal: IGoalDocument) => goal.isPublic);
-    }
-
-    res.status(200).json({ ...sanitizedQuery, goals: existingGoalsAndTasks(sanitizedQuery.goals) });
+    const goals = sanitizedQuery.goals ? existingGoalsAndTasks(sanitizedQuery.goals) : undefined;
+    res.status(200).json({ ...sanitizedQuery, goals });
   } catch (err) {
     handleError(err, res);
   }

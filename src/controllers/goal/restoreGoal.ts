@@ -1,22 +1,28 @@
-import Goal, { IGoalDocument } from "../../models/Goal";
+import Goal from "../../models/Goal";
 import Task from "../../models/Task";
-import { AuthRequest, ErrorResponse } from "../../types/types";
+import { AuthRequest } from "../../types/types";
 import { Response } from "express";
 import handleError from "../../utils/handleError";
-import { sanitizeQuery } from "../../utils/sanitizeQuery";
 import { resGoalNotFound, resInvalidAuth, resMissingFields } from "../../utils/resUtils";
+import { findByIdAndSanitize, updateByIdAndSanitize, updateManyAndSanitize } from "../../utils/mongooseUtils";
 
 export const restoreGoal = async (req: AuthRequest, res: Response) => {
   try {
-    if (!req.body.goalId) return resMissingFields(res, "Goal id");
-    const rawGoal = await Goal.findById(req.body.goalId);
-    if (!rawGoal) return resGoalNotFound(res);
-    const goal = sanitizeQuery(rawGoal) as IGoalDocument;
+    const { goalId } = req.body;
+    if (!goalId) return resMissingFields(res, "Goal id");
+
+    const goal = await findByIdAndSanitize(Goal, goalId);
+    if (!goal) return resGoalNotFound(res);
 
     if (goal.userId !== req.user.id) return resInvalidAuth(res);
 
-    await Task.updateMany({ _id: { $in: goal.tasks } }, { isRecycled: false, deleteAt: null }, { runValidators: true });
-    await Goal.findByIdAndUpdate(goal._id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true }).populate("tasks");
+    await updateManyAndSanitize(
+      Task,
+      { _id: { $in: goal.tasks } },
+      { isRecycled: false, deleteAt: null },
+      { new: true, runValidators: true, sanitize: false }
+    );
+    await updateByIdAndSanitize(Goal, goal.id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true }, { path: "tasks" });
 
     res.status(200).json({ notification: `${goal.title} Restored` });
   } catch (err) {

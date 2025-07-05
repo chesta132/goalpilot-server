@@ -1,8 +1,9 @@
 import Goal, { IGoal } from "../../models/Goal";
-import { AuthRequest, ErrorResponse } from "../../types/types";
+import { AuthRequest } from "../../types/types";
 import { Response } from "express";
 import handleError from "../../utils/handleError";
 import { resMissingFields } from "../../utils/resUtils";
+import { createAndSanitize } from "../../utils/mongooseUtils";
 
 export const createGoal = async (req: AuthRequest, res: Response) => {
   try {
@@ -11,7 +12,7 @@ export const createGoal = async (req: AuthRequest, res: Response) => {
 
     const user = req.user;
 
-    const newGoal = await Goal.create({
+    const newGoal = await createAndSanitize(Goal, {
       userId: user._id,
       title,
       description,
@@ -20,7 +21,7 @@ export const createGoal = async (req: AuthRequest, res: Response) => {
       color,
     });
 
-    res.status(201).json({ ...newGoal.toObject(), notification: `${newGoal.title} Created` });
+    res.status(201).json({ ...newGoal, notification: `${newGoal.title} Created` });
   } catch (err) {
     handleError(err, res);
   }

@@ -1,9 +1,9 @@
-import mongoose, { Document, Types } from "mongoose";
+import mongoose, { Document, ObjectId } from "mongoose";
 
 type TaskDifficulty = "easy" | "medium" | "hard" | "very hard";
 
 export interface ITask {
-  goalId: Types.ObjectId;
+  goalId: ObjectId | string;
   task: string;
   description: string;
   isCompleted: boolean;

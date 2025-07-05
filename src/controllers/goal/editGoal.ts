@@ -1,9 +1,10 @@
-import Goal, { IGoal, IGoalDocTasks, IGoalDocument } from "../../models/Goal";
-import { AuthRequest, ErrorResponse } from "../../types/types";
+import Goal, { IGoal, IGoalDocument } from "../../models/Goal";
+import { AuthRequest } from "../../types/types";
 import { Response } from "express";
 import handleError from "../../utils/handleError";
 import { sanitizeQuery } from "../../utils/sanitizeQuery";
 import { resGoalNotFound, resInvalidAuth, resMissingFields } from "../../utils/resUtils";
+import { updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
 export const editGoal = async (req: AuthRequest, res: Response) => {
   try {
@@ -18,8 +19,9 @@ export const editGoal = async (req: AuthRequest, res: Response) => {
       return resInvalidAuth(res);
     }
 
-    const rawUpdatedGoal = await Goal.findByIdAndUpdate(
-      goal._id,
+    const updatedGoal = await updateByIdAndSanitize(
+      Goal,
+      goal.id,
       {
         title,
         description,
@@ -29,11 +31,11 @@ export const editGoal = async (req: AuthRequest, res: Response) => {
         isPublic,
         color,
       },
-      { new: true, runValidators: true }
-    ).populate("tasks");
-    if (!rawUpdatedGoal) return resGoalNotFound(res);
+      { new: true, runValidators: true },
+      { path: "tasks" }
+    );
+    if (!updatedGoal) return resGoalNotFound(res);
 
-    const updatedGoal = sanitizeQuery(rawUpdatedGoal) as IGoalDocTasks;
     res.status(200).json({ ...updatedGoal, notification: `${updatedGoal!.title} Updated` });
   } catch (err) {
     handleError(err, res);

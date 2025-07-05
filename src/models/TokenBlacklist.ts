@@ -1,8 +1,8 @@
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document, ObjectId } from "mongoose";
 
 export interface ITokenBlacklist {
   refreshToken: string;
-  userId: string | unknown;
+  userId: string | ObjectId;
   deleteAt: Date;
 }
 
