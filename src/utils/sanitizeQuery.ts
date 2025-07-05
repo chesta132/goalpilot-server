@@ -1,7 +1,11 @@
 import { Document, isValidObjectId } from "mongoose";
 
-export const traverseAndSanitize = (data: any): any => {
-  if (data === null || typeof data !== "object") {
+export const traverseAndSanitize = (data: any, mongo = true): any => {
+  if (mongo && !data?._id && !Array.isArray(data)) {
+    return data;
+  }
+
+  if (!mongo && (data === null || typeof data !== "object" || data instanceof Date)) {
     return data;
   }
 
@@ -23,8 +27,12 @@ export const traverseAndSanitize = (data: any): any => {
   return sanitizedObject;
 };
 
-export const traverseCreateId = (data: any): any => {
-  if (data === null || typeof data !== "object") {
+export const traverseCreateId = (data: any, mongo = true): any => {
+  if (mongo && !data?._id && !Array.isArray(data)) {
+    return data;
+  }
+
+  if (!mongo && (data === null || typeof data !== "object" || data instanceof Date)) {
     return data;
   }
 
