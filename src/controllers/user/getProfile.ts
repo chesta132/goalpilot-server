@@ -1,18 +1,19 @@
 import User, { IUserDocGoalsAndTasks } from "../../models/User";
-import { AuthRequest, ErrorResponse } from "../../types/types";
+import { AuthRequest } from "../../types/types";
 import { Response } from "express";
 import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 import { IGoalDocument } from "../../models/Goal";
 import handleError from "../../utils/handleError";
 import { existingGoalsAndTasks } from "../../utils/filterExisting";
+import { resMissingFields, resUserNotFound } from "../../utils/resUtils";
 
 export const getProfile = async (req: AuthRequest, res: Response) => {
   try {
     const { username } = req.query;
-    if (!username) return res.status(422).json({ message: "Username is Required", code: "MISSING_FIELDS" } as ErrorResponse);
+    if (!username) return resMissingFields(res, "Username");
 
     const user = await User.findOne({ username: username }).populate({ path: "goals", populate: { path: "tasks" } });
-    if (!user) return res.status(404).json({ message: "User Not Found", code: "USER_NOT_FOUND" } as ErrorResponse);
+    if (!user) return resUserNotFound(res);
 
     const isOwner = user._id!.toString() === req.user.id;
     const sanitizedQuery: Omit<IUserDocGoalsAndTasks, "email"> & { email?: string } = sanitizeUserQuery(user, !isOwner);
@@ -24,7 +25,6 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
 
     res.status(200).json({ ...sanitizedQuery, goals: existingGoalsAndTasks(sanitizedQuery.goals) });
   } catch (err) {
-    console.error(err);
     handleError(err, res);
   }
 };

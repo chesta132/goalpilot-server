@@ -5,6 +5,7 @@ import { verifyRefreshToken } from "../../utils/tokenUtils";
 import { Response } from "express";
 import jwt from "jsonwebtoken";
 import handleError from "../../utils/handleError";
+import { resInvalidRefToken } from "../../utils/resUtils";
 
 export const signout = async (req: AuthRequest, res: Response) => {
   try {
@@ -12,7 +13,7 @@ export const signout = async (req: AuthRequest, res: Response) => {
 
     const verifiedPayload = verifyRefreshToken(req.cookies?.refreshToken);
     if (!verifiedPayload) {
-      return res.status(401).json({ message: "Invalid refresh token", code: "REFRESH_TOKEN_INVALID" } as ErrorResponse);
+      return resInvalidRefToken(res);
     }
     const expIn = (verifiedPayload as jwt.JwtPayload).exp ? new Date((verifiedPayload as jwt.JwtPayload).exp! * 1000) : new Date();
 

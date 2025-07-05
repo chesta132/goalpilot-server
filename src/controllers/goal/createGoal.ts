@@ -2,12 +2,12 @@ import Goal, { IGoal } from "../../models/Goal";
 import { AuthRequest, ErrorResponse } from "../../types/types";
 import { Response } from "express";
 import handleError from "../../utils/handleError";
+import { resMissingFields } from "../../utils/resUtils";
 
 export const createGoal = async (req: AuthRequest, res: Response) => {
   try {
     const { title, description, targetDate, isPublic, color }: IGoal = req.body;
-    if (!title || !description)
-      return res.status(422).json({ message: "Title and description is required", code: "MISSING_FIELDS" } as ErrorResponse);
+    if (!title || !description) return resMissingFields(res, "Title and description");
 
     const user = req.user;
 
@@ -22,7 +22,6 @@ export const createGoal = async (req: AuthRequest, res: Response) => {
 
     res.status(201).json({ ...newGoal.toObject(), notification: `${newGoal.title} Created` });
   } catch (err) {
-    console.error(err);
     handleError(err, res);
   }
 };

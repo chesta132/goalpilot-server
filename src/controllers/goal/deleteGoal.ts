@@ -4,19 +4,20 @@ import { AuthRequest, ErrorResponse } from "../../types/types";
 import { Response } from "express";
 import handleError from "../../utils/handleError";
 import { sanitizeQuery } from "../../utils/sanitizeQuery";
+import { resGoalNotFound, resInvalidAuth, resMissingFields } from "../../utils/resUtils";
 
 export const deleteGoal = async (req: AuthRequest, res: Response) => {
   try {
     const user = req.user;
     const { goalId } = req.body;
-    if (!goalId) return res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" } as ErrorResponse);
+    if (!goalId) return resMissingFields(res, "Goal id");
 
     const rawGoal = await Goal.findById(goalId);
-    if (!rawGoal) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" } as ErrorResponse);
+    if (!rawGoal) return resGoalNotFound(res);
     const goal = sanitizeQuery(rawGoal) as IGoalDocument;
 
     if (user.id !== goal.userId) {
-      return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" } as ErrorResponse);
+      return resInvalidAuth(res);
     }
 
     if (goal.tasks && goal.tasks.length > 0) {
@@ -25,9 +26,8 @@ export const deleteGoal = async (req: AuthRequest, res: Response) => {
     }
     await Goal.findByIdAndUpdate(goal._id, { isRecycled: true, deleteAt: Date.now() + 24 * 60 * 60 * 1000 });
 
-    res.status(200).json({ _id: goal._id, notification: `${goal.title} And ${goal.tasks.length} Tasks Deleted` });
+    res.status(200).json({ _id: goal._id, id: goal._id, notification: `${goal.title} And ${goal.tasks.length} Tasks Deleted` });
   } catch (err) {
-    console.error(err);
     handleError(err, res);
   }
 };

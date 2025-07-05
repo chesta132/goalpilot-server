@@ -4,12 +4,13 @@ import User from "../../models/User";
 import { AuthRequest, ErrorResponse } from "../../types/types";
 import { Response } from "express";
 import handleError from "../../utils/handleError";
+import { resUserNotFound } from "../../utils/resUtils";
 
 export const deleteUser = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user.id;
     const user = await User.findById(userId).populate({ path: "goals", populate: { path: "tasks" } });
-    if (!user) return res.status(404).json({ message: "User Not Found", code: "USER_NOT_FOUND" } as ErrorResponse);
+    if (!user) return resUserNotFound(res);
 
     const goalsAndTasksId = (user!.goals! as IGoalDocTasks[]).reduce(
       (acc: { goalsId: string[]; tasksId: string[] }, goal) => {
@@ -26,7 +27,6 @@ export const deleteUser = async (req: AuthRequest, res: Response) => {
 
     res.redirect(`${process.env.CLIENT_URL}/signin`);
   } catch (err) {
-    console.error(err);
     handleError(err, res);
   }
 };

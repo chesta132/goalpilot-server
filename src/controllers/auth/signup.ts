@@ -6,13 +6,13 @@ import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 import { createAccessToken, createRefreshToken } from "../../utils/tokenUtils";
 import { resAccessToken, resRefreshToken } from "../../utils/resCookie";
 import { ErrorResponse } from "../../types/types";
+import { resMissingFields } from "../../utils/resUtils";
 
 export const signup = async (req: Request, res: Response) => {
   try {
     const { username, email, password, fullName } = req.body;
 
-    if (!username || !email || !password || !fullName)
-      return res.status(422).json({ message: "Username, Email, Password, and Full Name is Required", code: "MISSING_FIELDS" } as ErrorResponse);
+    if (!username || !email || !password || !fullName) return resMissingFields(res, "Username, email, password, and full name");
     if (await User.findOne({ email: email }))
       return res.status(460).json({ code: "EMAIL_UNAVAILABLE", message: "Email is already in use" } as ErrorResponse);
     if (await User.findOne({ username: username }))

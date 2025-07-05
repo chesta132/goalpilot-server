@@ -24,7 +24,6 @@ export const getUser = async (req: AuthRequest, res: Response) => {
     const userResponse = { ...sanitizedQuery, goals: existingGoalsAndTasks(sanitizedQuery.goals) };
     res.status(200).json(userResponse);
   } catch (err) {
-    console.error(err);
     handleError(err, res);
   }
 };

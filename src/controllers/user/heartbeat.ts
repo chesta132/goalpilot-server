@@ -2,14 +2,14 @@ import { AuthRequest, ErrorResponse } from "../../types/types";
 import { Response } from "express";
 import handleError from "../../utils/handleError";
 import User from "../../models/User";
+import { resUserNotFound } from "../../utils/resUtils";
 
 export const heartbeat = async (req: AuthRequest, res: Response) => {
   try {
     const user = await User.findByIdAndUpdate(req.user.id, { status: "online", lastActive: new Date() }, { new: true, runValidators: true });
-    if (!user) return res.status(404).json({ message: "User Not Found", code: "USER_NOT_FOUND" } as ErrorResponse);
+    if (!user) return resUserNotFound(res)
     res.status(204).send();
   } catch (err) {
-    console.error(err);
     handleError(err, res);
   }
 };

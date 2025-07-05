@@ -6,6 +6,7 @@ import { AuthRequest, ErrorResponse, UserRole } from "../types/types";
 import TokenBlacklist from "../models/TokenBlacklist";
 import { sanitizeQuery } from "../utils/sanitizeQuery";
 import handleError from "../utils/handleError";
+import { resInvalidRefToken, resInvalidRole, resTokenBlacklisted, resUserNotFound } from "../utils/resUtils";
 
 export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -14,12 +15,12 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
     const refreshPayload = verifyRefreshToken(refreshToken);
 
     if (!refreshPayload) {
-      return res.status(401).json({ message: "Invalid refresh token", code: "REFRESH_TOKEN_INVALID" } as ErrorResponse);
+      return resInvalidRefToken(res);
     }
 
     const blacklistedToken = await TokenBlacklist.findOne({ refreshToken });
     if (blacklistedToken) {
-      return res.status(403).json({ message: "Token has been blacklisted", code: "TOKEN_BLACKLISTED" } as ErrorResponse);
+      return resTokenBlacklisted(res);
     }
 
     // acccess token validation
@@ -30,7 +31,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
       // Check if refresh token exists in database
       const rawUser = await User.findById(refreshPayload!.userId);
       if (!rawUser) {
-        return res.status(401).json({ message: "Invalid refresh token", code: "REFRESH_TOKEN_INVALID" } as ErrorResponse);
+        return resInvalidRefToken(res);
       }
 
       const user = sanitizeQuery(rawUser) as IUserDocument;
@@ -48,7 +49,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
 
     const rawUser = await User.findById(payload.userId);
     if (!rawUser) {
-      return res.status(404).json({ message: "User not found", code: "USER_NOT_FOUND" } as ErrorResponse);
+      return resUserNotFound(res);
     }
 
     const user = sanitizeQuery(rawUser) as IUserDocument;
@@ -62,7 +63,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
 export const requireRole = (roles: UserRole[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Insufficient permissions", code: "INVALID_ROLE" } as ErrorResponse);
+      return resInvalidRole(res);
     }
 
     next();
