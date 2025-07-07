@@ -7,13 +7,13 @@ export default function handleError(error: unknown, res: Response) {
   if (err && err.name === "ValidationError") {
     res.status(400).json({
       message: err.message,
-      name: "Validation Error",
+      title: "Validation Error",
       code: "VALIDATION_ERROR",
     } as ErrorResponse);
   } else if (err.name === "VersionError") {
     res.status(409).json({
-      name: "Version Error",
-      message: "This item was modified by another user/process. Please refresh and try again.",
+      title: "Version Error",
+      message: "This item was modified by another user/process. Please refresh and try again",
       code: "VERSION_CONFLICT",
     } as ErrorResponse);
   } else res.status(500).json({ message: "Internal Server Error", code: "SERVER_ERROR", details: err.message } as ErrorResponse);

@@ -13,3 +13,9 @@ export const resRefreshToken: CookieOptions = {
   sameSite: "strict",
   maxAge: 24 * 7 * 24 * 60 * 60 * 1000, // 6 months
 };
+
+export const resRefreshTokenSessionOnly: CookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict",
+};

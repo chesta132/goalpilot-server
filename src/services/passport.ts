@@ -12,12 +12,21 @@ passport.use(
     try {
       const user = await User.findOne({ email: email.trim() });
       if (!user) {
-        return done(null, false, { message: "Email not registered", code: "EMAIL_NOT_FOUND" } as ErrorResponse);
+        return done(null, false, { message: "Email not registered", code: "INVALID_EMAIL_FIELD" } as ErrorResponse);
+      }
+      if (user.googleId) {
+        return done(null, false, {
+          title: "Invalid auth method",
+          message: "Account is already binded with google, please sign in with Google and link to local account",
+          code: "INVALID_AUTH_METHODS",
+        } as ErrorResponse);
       }
 
-      const passwordValid = bcrypt.compare(password.trim(), user.password!);
+      console.log(password, "\n", user.password);
+
+      const passwordValid = await bcrypt.compare(password.trim(), user.password);
       if (!passwordValid) {
-        return done(null, false, { message: "Incorrect Password", code: "INCORRECT_PASSWORD" } as ErrorResponse);
+        return done(null, false, { message: "Incorrect Password", code: "INVALID_PASSWORD_FIELD" } as ErrorResponse);
       }
 
       done(null, user);
@@ -38,9 +47,14 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       try {
         const user = await User.findOne({ googleId: profile.id });
-
         if (user) {
           return done(null, user);
+        }
+        console.log(profile.emails);
+        const localUser = await User.findOne({ email: profile.emails ? profile.emails[0].value : "" });
+        if (localUser) {
+          await User.findByIdAndUpdate(localUser.id, { googleId: profile.id });
+          return done(null, localUser);
         }
 
         const newUser = new User({
