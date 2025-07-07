@@ -11,8 +11,7 @@ export const getUser = async (req: AuthRequest, res: Response) => {
   try {
     const user = req.user;
 
-    // const goals = await Goal.find({ userId: user._id }).sort({ _id: -1 });
-    const goals = await findAndSanitize(Goal, { userId: user.id }, [], { sort: { _id: -1 } });
+    const goals = await findAndSanitize(Goal, { userId: user.id }, { sort: { _id: -1 } });
     if (!goals) return resGoalNotFound(res);
 
     const goalsId = goals.map((goal) => goal.id);
@@ -20,8 +19,7 @@ export const getUser = async (req: AuthRequest, res: Response) => {
       User,
       user.id,
       { lastActive: new Date(), status: "online", goals: goalsId },
-      { new: true, runValidators: true },
-      { path: "goals", populate: { path: "tasks" } }
+      { options: { new: true, runValidators: true }, populate: { path: "goals", populate: { path: "tasks" } } }
     )) as IUserDocGoalsAndTasks | null;
     if (!updatedUser) return resUserNotFound(res);
 

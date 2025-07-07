@@ -19,7 +19,7 @@ export const restoreTask = async (req: AuthRequest, res: Response) => {
 
     if (goal.userId !== req.user.id) return resInvalidAuth(res);
 
-    await updateByIdAndSanitize(Task, task.id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true });
+    await updateByIdAndSanitize(Task, task.id, { isRecycled: false, deleteAt: null }, { options: { new: true, runValidators: true } });
     res.status(200).json({ notification: `${task.task} Restored` });
   } catch (err) {
     console.error(err);

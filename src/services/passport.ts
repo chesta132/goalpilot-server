@@ -1,6 +1,5 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Strategy as JWTStrategy, ExtractJwt } from "passport-jwt";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import bcrypt from "bcrypt";
 import User from "../models/User";
@@ -27,25 +26,6 @@ passport.use(
       done(err);
     }
   })
-);
-
-passport.use(
-  new JWTStrategy(
-    {
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.SECRET_KEY!,
-    },
-    async function (jwtPayload, done) {
-      try {
-        const user = await User.findById(jwtPayload.id);
-        if (!user) return done(null, false, { message: "User Not Found", code: "USER_NOT_FOUND" } as ErrorResponse);
-        return done(null, user);
-      } catch (err: any) {
-        console.error(err);
-        return done(err, false, { message: err.message, code: "INVALID_JWT" } as ErrorResponse);
-      }
-    }
-  )
 );
 
 passport.use(

@@ -1,5 +1,5 @@
 export const generateReward = (data: any) => {
-  switch (data.difficulty) {
+  switch (data?.difficulty) {
     case "easy":
       return 200;
     case "medium":

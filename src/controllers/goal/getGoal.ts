@@ -12,7 +12,7 @@ export const getGoal = async (req: AuthRequest, res: Response) => {
     const { goalId } = req.query;
     if (!goalId) return resMissingFields(res, "Goal id");
 
-    const tasks = await findAndSanitize(Task, { goalId }, [], { sort: { _id: -1 } });
+    const tasks = await findAndSanitize(Task, { goalId }, { sort: { _id: -1 } });
     let tasksId;
     if (tasks) tasksId = tasks.map((task) => task._id);
 
@@ -20,8 +20,7 @@ export const getGoal = async (req: AuthRequest, res: Response) => {
       Goal,
       goalId.toString(),
       { tasks: tasksId },
-      { new: true, runValidators: true },
-      { path: "tasks" }
+      { options: { new: true, runValidators: true }, populate: { path: "tasks" } }
     )) as IGoalDocTasks;
     if (!goal) return resGoalNotFound(res);
 

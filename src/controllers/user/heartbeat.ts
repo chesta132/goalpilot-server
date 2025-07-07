@@ -7,7 +7,12 @@ import { updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
 export const heartbeat = async (req: AuthRequest, res: Response) => {
   try {
-    const user = await updateByIdAndSanitize(User, req.user.id, { status: "online", lastActive: new Date() }, { new: true, runValidators: true });
+    const user = await updateByIdAndSanitize(
+      User,
+      req.user.id,
+      { status: "online", lastActive: new Date() },
+      { options: { new: true, runValidators: true } }
+    );
     if (!user) return resUserNotFound(res);
     res.status(204).send();
   } catch (err) {

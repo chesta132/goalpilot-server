@@ -12,7 +12,7 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
     const { username } = req.query;
     if (!username) return resMissingFields(res, "Username");
 
-    const user = await findOneAndSanitize(User, { username }, { path: "goals", populate: { path: "tasks" } });
+    const user = await findOneAndSanitize(User, { username }, { populate: { path: "goals", populate: { path: "tasks" } } });
     if (!user) return resUserNotFound(res);
 
     const isOwner = user.id === req.user.id;

@@ -21,7 +21,12 @@ export const deleteTask = async (req: AuthRequest, res: Response) => {
       return resInvalidAuth(res);
     }
 
-    await updateByIdAndSanitize(Task, task.id, { isRecycled: true, deleteAt: Date.now() + 24 * 60 * 60 * 1000 }, { new: true, runValidators: true });
+    await updateByIdAndSanitize(
+      Task,
+      task.id,
+      { isRecycled: true, deleteAt: Date.now() + 24 * 60 * 60 * 1000 },
+      { options: { new: true, runValidators: true } }
+    );
 
     res.status(200).json({ _id: task._id, id: task._id, notification: `${task.task} Deleted` });
   } catch (err) {

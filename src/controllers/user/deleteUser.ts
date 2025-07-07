@@ -10,7 +10,7 @@ import { findByIdAndSanitize } from "../../utils/mongooseUtils";
 export const deleteUser = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user.id;
-    const user = await findByIdAndSanitize(User, userId, { path: "goals", populate: { path: "tasks" } });
+    const user = await findByIdAndSanitize(User, userId, { populate: { path: "goals", populate: { path: "tasks" } } });
     if (!user) return resUserNotFound(res);
 
     const goalsAndTasksId = (user!.goals! as IGoalDocTasks[]).reduce(

@@ -31,8 +31,7 @@ export const editGoal = async (req: AuthRequest, res: Response) => {
         isPublic,
         color,
       },
-      { new: true, runValidators: true },
-      { path: "tasks" }
+      { options: { new: true, runValidators: true }, populate: { path: "tasks" } }
     );
     if (!updatedGoal) return resGoalNotFound(res);
 

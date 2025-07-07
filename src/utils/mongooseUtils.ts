@@ -1,10 +1,12 @@
 import {
   Document,
+  InsertManyOptions,
   isValidObjectId,
   Model as MongooseModel,
   MongooseUpdateQueryOptions,
   ObjectId,
   PopulateOptions,
+  ProjectionType,
   QueryOptions,
   SortOrder,
   UpdateQuery,
@@ -13,21 +15,29 @@ import {
 } from "mongoose";
 import { sanitizeQuery } from "./sanitizeQuery";
 
+type Settings<T> = {
+  project?: ProjectionType<T>;
+  options?: QueryOptions<T>;
+  populate?: PopulateOptions | (PopulateOptions | string)[];
+  sort?: string | { [key: string]: SortOrder | { $meta: any } } | [string, SortOrder][] | undefined | null;
+  sortOptions?: { override?: boolean };
+};
+
 // Find
 export const findByIdAndSanitize = async <T extends Document<any, any, any>>(
   model: MongooseModel<T>,
   id: string | ObjectId,
-  populate?: PopulateOptions | (PopulateOptions | string)[],
-  sort?: { sort?: string | { [key: string]: SortOrder | { $meta: any } } | [string, SortOrder][] | undefined | null; options?: { override?: boolean } }
+  settings?: Settings<T>
 ): Promise<T | null> => {
   if (!isValidObjectId(id)) {
     console.warn(`Invalid ObjectId provided for model ${model.modelName}: ${id}`);
     return null;
   }
 
-  const rawQuery = populate
-    ? await model.findById(id).populate(populate).sort(sort?.sort, sort?.options)
-    : await model.findById(id).sort(sort?.sort, sort?.options);
+  const rawQuery = await model
+    .findById(id, settings?.project, settings?.options)
+    .populate(settings?.populate || [])
+    .sort(settings?.sort, settings?.sortOptions);
 
   if (!rawQuery) return null;
   return sanitizeQuery(rawQuery) as T;
@@ -36,12 +46,12 @@ export const findByIdAndSanitize = async <T extends Document<any, any, any>>(
 export const findOneAndSanitize = async <T extends Document<any, any, any>>(
   model: MongooseModel<T>,
   filter: any,
-  populate?: PopulateOptions | (PopulateOptions | string)[],
-  sort?: { sort?: string | { [key: string]: SortOrder | { $meta: any } } | [string, SortOrder][] | undefined | null; options?: { override?: boolean } }
+  settings?: Settings<T>
 ): Promise<T | null> => {
-  const rawQuery = populate
-    ? await model.findOne(filter).populate(populate).sort(sort?.sort, sort?.options)
-    : await model.findOne(filter).sort(sort?.sort, sort?.options);
+  const rawQuery = await model
+    .findOne(filter, settings?.project, settings?.options)
+    .populate(settings?.populate || [])
+    .sort(settings?.sort, settings?.sortOptions);
 
   if (!rawQuery) return null;
   return sanitizeQuery(rawQuery) as T;
@@ -50,12 +60,12 @@ export const findOneAndSanitize = async <T extends Document<any, any, any>>(
 export const findAndSanitize = async <T extends Document<any, any, any>>(
   model: MongooseModel<T>,
   filter: any,
-  populate?: PopulateOptions | (PopulateOptions | string)[],
-  sort?: { sort?: string | { [key: string]: SortOrder | { $meta: any } } | [string, SortOrder][] | undefined | null; options?: { override?: boolean } }
+  settings?: Settings<T>
 ): Promise<T[] | null> => {
-  const rawQuery = populate
-    ? await model.find(filter).populate(populate).sort(sort?.sort, sort?.options)
-    : await model.find(filter).sort(sort?.sort, sort?.options);
+  const rawQuery = await model
+    .find(filter, settings?.project, settings?.options)
+    .populate(settings?.populate || [])
+    .sort(settings?.sort, settings?.sortOptions);
 
   if (!rawQuery) return null;
   return sanitizeQuery(rawQuery) as T[];
@@ -66,18 +76,17 @@ export const updateByIdAndSanitize = async <T extends Document<any, any, any>>(
   model: MongooseModel<T>,
   id: string | ObjectId,
   update: UpdateQuery<T>,
-  options?: QueryOptions,
-  populate?: PopulateOptions | (PopulateOptions | string)[],
-  sort?: { sort?: string | { [key: string]: SortOrder | { $meta: any } } | [string, SortOrder][] | undefined | null; options?: { override?: boolean } }
+  settings?: Omit<Settings<T>, "project">
 ): Promise<T | null> => {
   if (!isValidObjectId(id)) {
     console.warn(`Invalid ObjectId provided for model ${model.modelName}: ${id}`);
     return null;
   }
 
-  const rawQuery = populate
-    ? await model.findByIdAndUpdate(id, update, options).populate(populate).sort(sort?.sort, sort?.options)
-    : await model.findByIdAndUpdate(id, update, options).sort(sort?.sort, sort?.options);
+  const rawQuery = await model
+    .findByIdAndUpdate(id, update, settings?.options)
+    .populate(settings?.populate || [])
+    .sort(settings?.sort, settings?.sortOptions);
 
   if (!rawQuery) return null;
   return sanitizeQuery(rawQuery) as T;
@@ -87,13 +96,12 @@ export const updateOneAndSanitize = async <T extends Document<any, any, any>>(
   model: MongooseModel<T>,
   filter: any,
   update: UpdateQuery<T>,
-  options?: QueryOptions,
-  populate?: PopulateOptions | (PopulateOptions | string)[],
-  sort?: { sort?: string | { [key: string]: SortOrder | { $meta: any } } | [string, SortOrder][] | undefined | null; options?: { override?: boolean } }
+  settings?: Omit<Settings<T>, "project">
 ): Promise<T | null> => {
-  const rawQuery = populate
-    ? await model.findOneAndUpdate(filter, update, options).populate(populate).sort(sort?.sort, sort?.options)
-    : await model.findOneAndUpdate(filter, update, options).sort(sort?.sort, sort?.options);
+  const rawQuery = await model
+    .findOneAndUpdate(filter, update, settings?.options)
+    .populate(settings?.populate || [])
+    .sort(settings?.sort, settings?.sortOptions);
 
   if (!rawQuery) return null;
   return sanitizeQuery(rawQuery) as T;
@@ -103,21 +111,28 @@ export const updateManyAndSanitize = async <T extends Document<any, any, any>>(
   model: MongooseModel<T>,
   filter: any,
   update: UpdateQuery<T> | UpdateWithAggregationPipeline,
-  options?: MongooseUpdateQueryOptions & { sanitize?: boolean },
-  populate?: PopulateOptions | (PopulateOptions | string)[],
-  sort?: { sort?: string | { [key: string]: SortOrder | { $meta: any } } | [string, SortOrder][] | undefined | null; options?: { override?: boolean } }
+  settings: { sanitize?: boolean; options: MongooseUpdateQueryOptions } & Omit<Omit<Settings<T>, "project">, "options">
 ): Promise<T[] | UpdateWriteOpResult | null> => {
-  const rawQuery = await model.updateMany(filter, update, options).sort(sort?.sort, sort?.options);
+  const rawQuery = await model.updateMany(filter, update, settings?.options).sort(settings?.sort, settings?.sortOptions);
 
-  if (options && options.sanitize === undefined) options = { ...options, sanitize: true };
+  if (settings?.options && settings.options.sanitize === undefined) settings = { ...settings, sanitize: true };
+
   if (!rawQuery) return null;
-  if (!options?.sanitize) return rawQuery;
-
-  return (await findAndSanitize(model, filter, populate)) as T[];
+  if (!settings.options.sanitize) return rawQuery;
+  return (await findAndSanitize(model, filter, settings)) as T[];
 };
 
 // Create
 export const createAndSanitize = async <T extends Document<any, any, any>>(model: MongooseModel<T>, doc: any): Promise<T> => {
   const rawQuery = await model.create(doc);
   return sanitizeQuery(rawQuery) as T;
+};
+
+export const insertManyAndSanitize = async <T extends Document<any, any, any>>(
+  model: MongooseModel<T>,
+  docs: any[],
+  settings?: { options?: InsertManyOptions }
+): Promise<T[]> => {
+  const rawQuery = await model.insertMany(docs, settings?.options ?? {});
+  return sanitizeQuery(rawQuery) as T[];
 };

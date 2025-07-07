@@ -40,7 +40,7 @@ export const editTask = async (req: AuthRequest, res: Response) => {
         rewardPoints,
         completedAt,
       },
-      { new: true, runValidators: true }
+      { options: { new: true, runValidators: true } }
     );
 
     res.status(200).json({ notification: `${taskUser.task} Updated` });

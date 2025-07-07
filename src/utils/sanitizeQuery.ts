@@ -1,4 +1,4 @@
-import mongoose, { Document, isValidObjectId } from "mongoose";
+import { Document, isValidObjectId } from "mongoose";
 import { IUserDocGoalsAndTasks } from "../models/User";
 
 export const traverseAndSanitize = (data: any, mongo = true): any => {

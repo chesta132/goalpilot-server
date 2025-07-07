@@ -20,9 +20,14 @@ export const restoreGoal = async (req: AuthRequest, res: Response) => {
       Task,
       { _id: { $in: goal.tasks } },
       { isRecycled: false, deleteAt: null },
-      { new: true, runValidators: true, sanitize: false }
+      { options: { new: true, runValidators: true, sanitize: false } }
     );
-    await updateByIdAndSanitize(Goal, goal.id, { isRecycled: false, deleteAt: null }, { new: true, runValidators: true }, { path: "tasks" });
+    await updateByIdAndSanitize(
+      Goal,
+      goal.id,
+      { isRecycled: false, deleteAt: null },
+      { options: { new: true, runValidators: true }, populate: { path: "tasks" } }
+    );
 
     res.status(200).json({ notification: `${goal.title} Restored` });
   } catch (err) {

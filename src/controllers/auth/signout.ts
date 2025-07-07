@@ -15,7 +15,12 @@ export const signout = async (req: AuthRequest, res: Response) => {
       return resInvalidRefToken(res);
     }
 
-    const user = await updateOneAndSanitize(User, req.user.id, { lastActive: new Date(), status: "offline" }, { new: true, runValidators: true });
+    const user = await updateOneAndSanitize(
+      User,
+      req.user.id,
+      { lastActive: new Date(), status: "offline" },
+      { options: { new: true, runValidators: true } }
+    );
     const expIn = (verifiedPayload as jwt.JwtPayload).exp ? new Date((verifiedPayload as jwt.JwtPayload).exp! * 1000) : new Date();
 
     await TokenBlacklist.create({ refreshToken: req.cookies?.refreshToken, userId: user?._id, deleteAt: expIn });
