@@ -5,24 +5,23 @@ import bcrypt from "bcrypt";
 import User from "../models/User";
 import { config } from "dotenv";
 import { ErrorResponse } from "../types/types";
+import { findOneAndSanitize } from "../utils/mongooseUtils";
 config();
 
 passport.use(
   new LocalStrategy({ usernameField: "email" }, async (email, password, done) => {
     try {
-      const user = await User.findOne({ email: email.trim() });
+      const user = await findOneAndSanitize(User, { email: email.trim() }, { populate: { path: "goals" } });
       if (!user) {
         return done(null, false, { message: "Email not registered", code: "INVALID_EMAIL_FIELD" } as ErrorResponse);
       }
-      if (user.googleId) {
+      if (user.googleId && !user.password) {
         return done(null, false, {
           title: "Invalid auth method",
           message: "Account is already binded with google, please sign in with Google and link to local account",
           code: "INVALID_AUTH_METHODS",
         } as ErrorResponse);
       }
-
-      console.log(password, "\n", user.password);
 
       const passwordValid = await bcrypt.compare(password.trim(), user.password);
       if (!passwordValid) {

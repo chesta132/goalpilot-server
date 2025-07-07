@@ -24,6 +24,7 @@ export const signin = async (req: Request, res: Response, next: NextFunction) =>
           return handleError(err, res);
         }
         const rememberMe: boolean = req.body.rememberMe;
+        console.log(rememberMe)
 
         const accessToken = createAccessToken({ userId: user._id, role: user.role! });
         const refreshToken = createRefreshToken({ userId: user._id, role: user.role! }, rememberMe ? undefined : "3d");
@@ -31,8 +32,7 @@ export const signin = async (req: Request, res: Response, next: NextFunction) =>
         res.cookie("accessToken", accessToken, resAccessToken);
         res.cookie("refreshToken", refreshToken, rememberMe ? resRefreshToken : resRefreshTokenSessionOnly);
 
-        const userResponse = sanitizeUserQuery(user);
-        res.status(200).json(userResponse);
+        res.status(200).json(user);
       });
     }
   )(req, res, next);
