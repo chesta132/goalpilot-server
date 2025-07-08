@@ -10,10 +10,11 @@ import passport from "passport";
 import "./services/passport";
 import cookieParser from "cookie-parser";
 import session from "express-session";
+import MongoStore from "connect-mongo";
 
 connectDB();
 const app = express();
-app.set("trust proxy", true);
+app.set("trust proxy", ["loopback", "linklocal"]);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -40,6 +41,7 @@ app.use(
     secret: process.env.SECRET_KEY!,
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI! }),
   })
 );
 app.use(passport.initialize());

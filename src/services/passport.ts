@@ -3,10 +3,8 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import bcrypt from "bcrypt";
 import User from "../models/User";
-import { config } from "dotenv";
 import { ErrorResponse } from "../types/types";
 import { findOneAndSanitize } from "../utils/mongooseUtils";
-config();
 
 passport.use(
   new LocalStrategy({ usernameField: "email" }, async (email, password, done) => {
