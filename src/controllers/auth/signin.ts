@@ -24,7 +24,6 @@ export const signin = async (req: Request, res: Response, next: NextFunction) =>
           return handleError(err, res);
         }
         const rememberMe: boolean = req.body.rememberMe;
-        console.log(rememberMe)
 
         const accessToken = createAccessToken({ userId: user._id, role: user.role! });
         const refreshToken = createRefreshToken({ userId: user._id, role: user.role! }, rememberMe ? undefined : "3d");

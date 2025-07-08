@@ -28,7 +28,7 @@ export const editTask = async (req: AuthRequest, res: Response) => {
     }
     const rewardPoints = generateReward(req.body);
 
-    await updateByIdAndSanitize(
+    const updatedTask = await updateByIdAndSanitize(
       Task,
       taskUser.id,
       {
@@ -43,7 +43,7 @@ export const editTask = async (req: AuthRequest, res: Response) => {
       { options: { new: true, runValidators: true } }
     );
 
-    res.status(200).json({ notification: `${taskUser.task} Updated` });
+    res.status(200).json({ ...updatedTask, notification: `${taskUser.task} Updated` });
   } catch (err) {
     handleError(err, res);
   }
