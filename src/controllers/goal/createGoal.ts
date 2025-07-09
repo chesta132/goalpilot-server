@@ -21,7 +21,7 @@ export const createGoal = async (req: AuthRequest, res: Response) => {
       color,
     });
 
-    res.status(201).json({ ...newGoal, notification: `${newGoal.title} Created` });
+    res.status(201).json({ ...newGoal, notification: `${newGoal.title} created` });
   } catch (err) {
     handleError(err, res);
   }

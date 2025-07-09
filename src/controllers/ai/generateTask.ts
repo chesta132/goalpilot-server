@@ -5,7 +5,7 @@ import Goal from "../../models/Goal";
 import crypto from "crypto";
 import AiCache from "../../models/AiCache";
 import { generateReward } from "../../utils/levelingUtils";
-import Task from "../../models/Task";
+import Task, { ITaskDocument } from "../../models/Task";
 import { GoogleGenAI, Type } from "@google/genai";
 import handleError from "../../utils/handleError";
 import { sanitizeQuery } from "../../utils/sanitizeQuery";
@@ -15,7 +15,7 @@ export const generateTask = async (req: AuthRequest, res: Response) => {
     const { goalId, query } = req.body;
     if (!goalId) return res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" });
 
-    const goal = await Goal.findById(goalId);
+    const goal = await Goal.findById(goalId).populate("tasks");
     if (!goal) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
     if (req.user.id !== goal.userId.toString()) {
       return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
@@ -39,8 +39,8 @@ export const generateTask = async (req: AuthRequest, res: Response) => {
       const newTask = await insertManyAndSanitize(Task, newTaskData);
       goal.tasks.push(...newTask.map((task) => task.id));
       await goal.save();
-      const goalPopulated = { ...sanitizeQuery(goal), tasks: sanitizeQuery(newTask) };
-      return res.status(200).json({ ...goalPopulated, notification: `${newTask.length} Tasks Created` });
+      const goalPopulated = { ...sanitizeQuery(goal), tasks: sanitizeQuery([...newTask, ...goal.tasks] as ITaskDocument[]) };
+      return res.status(200).json({ ...goalPopulated, notification: `${newTask.length} tasks created` });
     }
 
     const prevTasks = await findAndSanitize(Task, { goalId: goal.id }, { project: { task: 1, description: 1, difficulty: 1, _id: 0 } });
@@ -103,8 +103,8 @@ export const generateTask = async (req: AuthRequest, res: Response) => {
       aiResponse: responseData,
     });
 
-    const goalPopulated = { ...sanitizeQuery(goal), tasks: sanitizeQuery(newTask) };
-    res.status(200).json({ ...goalPopulated, notification: `${newTask.length} Tasks Created` });
+    const goalPopulated = { ...sanitizeQuery(goal), tasks: sanitizeQuery([...newTask, ...goal.tasks] as ITaskDocument[]) };
+    res.status(200).json({ ...goalPopulated, notification: `${newTask.length} tasks created` });
   } catch (err) {
     handleError(err, res);
   }

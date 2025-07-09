@@ -35,7 +35,7 @@ export const editGoal = async (req: AuthRequest, res: Response) => {
     );
     if (!updatedGoal) return resGoalNotFound(res);
 
-    res.status(200).json({ ...updatedGoal, notification: `${updatedGoal!.title} Updated` });
+    res.status(200).json({ ...updatedGoal, notification: `${updatedGoal!.title} updated` });
   } catch (err) {
     handleError(err, res);
   }

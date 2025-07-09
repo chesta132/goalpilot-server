@@ -43,7 +43,7 @@ export const editTask = async (req: AuthRequest, res: Response) => {
       { options: { new: true, runValidators: true } }
     );
 
-    res.status(200).json({ ...updatedTask, notification: `${taskUser.task} Updated` });
+    res.status(200).json({ ...updatedTask, notification: `${taskUser.task} updated` });
   } catch (err) {
     handleError(err, res);
   }

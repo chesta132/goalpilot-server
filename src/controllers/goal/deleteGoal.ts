@@ -35,7 +35,7 @@ export const deleteGoal = async (req: AuthRequest, res: Response) => {
       { options: { new: true, runValidators: true } }
     );
 
-    res.status(200).json({ _id: goal._id, id: goal.id, notification: `${goal.title} And ${goal.tasks.length} Tasks Deleted` });
+    res.status(200).json({ _id: goal._id, id: goal.id, notification: `${goal.title} and ${goal.tasks.length} tasks deleted` });
   } catch (err) {
     handleError(err, res);
   }

@@ -41,7 +41,7 @@ export const createTask = async (req: AuthRequest, res: Response) => {
       { options: { new: true, runValidators: true } }
     );
 
-    res.status(201).json({ ...newTask, notification: `${newTask.task} Created` });
+    res.status(201).json({ ...newTask, notification: `${newTask.task} created` });
   } catch (err) {
     handleError(err, res);
   }

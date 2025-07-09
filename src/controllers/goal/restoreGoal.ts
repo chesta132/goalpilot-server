@@ -29,7 +29,7 @@ export const restoreGoal = async (req: AuthRequest, res: Response) => {
       { options: { new: true, runValidators: true }, populate: { path: "tasks" } }
     );
 
-    res.status(200).json({ notification: `${goal.title} Restored` });
+    res.status(200).json({ notification: `${goal.title} restored` });
   } catch (err) {
     handleError(err, res);
   }
