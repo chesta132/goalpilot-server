@@ -47,17 +47,35 @@ passport.use(
         if (user) {
           return done(null, user);
         }
-        console.log(profile.emails);
+
         const localUser = await User.findOne({ email: profile.emails ? profile.emails[0].value : "" });
         if (localUser) {
           await User.findByIdAndUpdate(localUser.id, { googleId: profile.id });
           return done(null, localUser);
         }
 
+        const usernameScheme = profile.displayName.toLowerCase().replaceAll(/[^a-zA-Z0-9]/g, "");
+        const existingUsername = await User.find({ username: { $regex: "^" + usernameScheme } });
+        let newUsername = usernameScheme;
+
+        if (existingUsername.length > 0) {
+          let counter = 0;
+          while (true) {
+            const potentialUsername = usernameScheme + (counter === 0 ? "" : counter);
+            const isTaken = existingUsername.some((user) => user.username === potentialUsername);
+
+            if (!isTaken) {
+              newUsername = potentialUsername;
+              break;
+            }
+            counter++;
+          }
+        }
+
         const newUser = new User({
           googleId: profile.id,
-          username: profile.emails ? profile.emails[0].value : crypto.randomUUID(),
-          email: profile.emails ? profile.emails[0].value : crypto.randomUUID(),
+          username: newUsername,
+          email: profile.emails![0]?.value,
           fullName: profile.displayName,
         });
         await newUser.save();

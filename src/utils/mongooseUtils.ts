@@ -111,7 +111,7 @@ export const updateManyAndSanitize = async <T extends Document<any, any, any>>(
   model: MongooseModel<T>,
   filter: any,
   update: UpdateQuery<T> | UpdateWithAggregationPipeline,
-  settings: { sanitize?: boolean; options: MongooseUpdateQueryOptions } & Omit<Omit<Settings<T>, "project">, "options">
+  settings: { sanitize?: boolean; options: MongooseUpdateQueryOptions } & Omit<Settings<T>, "project" | "options">
 ): Promise<T[] | UpdateWriteOpResult | null> => {
   const rawQuery = await model.updateMany(filter, update, settings?.options).sort(settings?.sort, settings?.sortOptions);
 
