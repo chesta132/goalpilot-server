@@ -7,7 +7,7 @@ import { createAndSanitize } from "../../utils/mongooseUtils";
 
 export const createGoal = async (req: AuthRequest, res: Response) => {
   try {
-    const { title, description, targetDate, isPublic, color }: IGoal = req.body;
+    const { title, description, targetDate, isPublic, color, status }: IGoal = req.body;
     if (!title || !description) return resMissingFields(res, "Title and description");
 
     const user = req.user;
@@ -19,6 +19,7 @@ export const createGoal = async (req: AuthRequest, res: Response) => {
       targetDate,
       isPublic,
       color,
+      status,
     });
 
     res.status(201).json({ ...newGoal, notification: `${newGoal.title} created` });

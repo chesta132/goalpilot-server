@@ -22,10 +22,13 @@ export const editTask = async (req: AuthRequest, res: Response) => {
       return resInvalidAuth(res);
     }
 
-    let completedAt = null;
+    let completedAt = undefined;
     if (isCompleted === true && !taskUser.isCompleted) {
       completedAt = new Date();
+    } else if (taskUser.isCompleted && isCompleted === false) {
+      completedAt = null;
     }
+
     const rewardPoints = generateReward(req.body);
 
     const updatedTask = await updateByIdAndSanitize(
