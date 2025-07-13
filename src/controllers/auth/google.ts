@@ -1,13 +1,13 @@
-import { Response } from "express";
+import { Response, Request } from "express";
 import { createAccessToken, createRefreshToken } from "../../utils/tokenUtils";
-import { AuthRequest } from "../../types/types";
 import { resAccessToken, resRefreshToken } from "../../utils/resCookie";
 
-export const googleCallback = (req: AuthRequest, res: Response) => {
-  const accessToken = createAccessToken({ userId: req.user._id, role: req.user.role });
-  const refreshToken = createRefreshToken({ userId: req.user._id, role: req.user.role });
+export const googleCallback = (req: Request, res: Response) => {
+  const user = req.user as Express.User;
+  const accessToken = createAccessToken({ userId: user!._id, role: user!.role });
+  const refreshToken = createRefreshToken({ userId: user!._id, role: user!.role });
 
   res.cookie("accessToken", accessToken, resAccessToken);
   res.cookie("refreshToken", refreshToken, resRefreshToken);
-  res.redirect(`${process.env.CLIENT_URL}/`);
+  res.redirect(`${process.env.CLIENT_URL_DEV}/`);
 };

@@ -12,14 +12,20 @@ export const signup = async (req: Request, res: Response) => {
   try {
     const { username, email, password, fullName, rememberMe } = req.body;
 
-    if (!username || !email || !password || !fullName) return resMissingFields(res, "Username, email, password, and full name");
-    if (await User.findOne({ email }))
-      return res.status(460).json({ code: "INVALID_EMAIL_FIELD", message: "Email is already in use" } as ErrorResponse);
-    if (await User.findOne({ username }))
-      return res.status(460).json({ code: "INVALID_USERNAME_FIELD", message: "Username is already in use" } as ErrorResponse);
+    if (!username || !email || !password || !fullName) {
+      resMissingFields(res, "Username, email, password, and full name");
+      return;
+    }
+    if (await User.findOne({ email })) {
+      res.status(460).json({ code: "INVALID_EMAIL_FIELD", message: "Email is already in use" } as ErrorResponse);
+      return;
+    }
+    if (await User.findOne({ username })) {
+      res.status(460).json({ code: "INVALID_USERNAME_FIELD", message: "Username is already in use" } as ErrorResponse);
+      return;
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = await createAndSanitize(User, {
       username,
       email,

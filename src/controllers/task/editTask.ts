@@ -1,5 +1,4 @@
-import { AuthRequest } from "../../types/types";
-import { Response } from "express";
+import { Response, Request } from "express";
 import handleError from "../../utils/handleError";
 import Goal from "../../models/Goal";
 import { resGoalNotFound, resInvalidAuth, resMissingFields, resTaskNotFound } from "../../utils/resUtils";
@@ -7,19 +6,30 @@ import Task from "../../models/Task";
 import { generateReward } from "../../utils/levelingUtils";
 import { findByIdAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
-export const editTask = async (req: AuthRequest, res: Response) => {
+export const editTask = async (req: Request, res: Response) => {
   try {
+    const user = req.user as Express.User;
     const { taskId, task, description, isCompleted, targetDate, difficulty } = req.body;
-    if (!taskId) return resMissingFields(res, "Task id");
+    if (!taskId) {
+      resMissingFields(res, "Task id");
+      return;
+    }
 
     const taskUser = await findByIdAndSanitize(Task, taskId);
-    if (!taskUser) return resTaskNotFound(res);
+    if (!taskUser) {
+      resTaskNotFound(res);
+      return;
+    }
 
     const goal = await findByIdAndSanitize(Goal, taskUser.goalId);
-    if (!goal) return resGoalNotFound(res);
+    if (!goal) {
+      resGoalNotFound(res);
+      return;
+    }
 
-    if (req.user.id !== goal.userId) {
-      return resInvalidAuth(res);
+    if (user.id !== goal.userId) {
+      resInvalidAuth(res);
+      return;
     }
 
     let completedAt = undefined;

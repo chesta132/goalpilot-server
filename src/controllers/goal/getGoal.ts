@@ -1,16 +1,19 @@
 import Goal, { IGoalDocTasks } from "../../models/Goal";
 import Task from "../../models/Task";
-import { AuthRequest } from "../../types/types";
-import { Response } from "express";
+import { Response, Request } from "express";
 import { existingTasks } from "../../utils/filterExisting";
 import handleError from "../../utils/handleError";
 import { resGoalNotFound, resInvalidAuth, resMissingFields } from "../../utils/resUtils";
 import { findAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
-export const getGoal = async (req: AuthRequest, res: Response) => {
+export const getGoal = async (req: Request, res: Response) => {
   try {
+    const user = req.user as Express.User;
     const { goalId } = req.query;
-    if (!goalId) return resMissingFields(res, "Goal id");
+    if (!goalId) {
+      resMissingFields(res, "Goal id");
+      return;
+    }
 
     const tasks = await findAndSanitize(Task, { goalId }, { sort: { _id: -1 } });
     let tasksId;
@@ -22,10 +25,14 @@ export const getGoal = async (req: AuthRequest, res: Response) => {
       { tasks: tasksId },
       { options: { new: true, runValidators: true }, populate: { path: "tasks" } }
     )) as IGoalDocTasks;
-    if (!goal) return resGoalNotFound(res);
+    if (!goal) {
+      resGoalNotFound(res);
+      return;
+    }
 
-    if (req.user.id !== goal.userId) {
-      return resInvalidAuth(res);
+    if (user.id !== goal.userId) {
+      resInvalidAuth(res);
+      return;
     }
 
     res.status(200).json({ ...goal, tasks: existingTasks(goal.tasks) });

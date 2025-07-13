@@ -1,24 +1,33 @@
-import { AuthRequest } from "../../types/types";
-import { Response } from "express";
+import { Response, Request } from "express";
 import handleError from "../../utils/handleError";
 import Task from "../../models/Task";
 import Goal from "../../models/Goal";
-import { resGoalNotFound, resInvalidAuth, resTaskNotFound } from "../../utils/resUtils";
+import { resGoalNotFound, resInvalidAuth, resMissingFields, resTaskNotFound } from "../../utils/resUtils";
 import { findByIdAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
-export const deleteTask = async (req: AuthRequest, res: Response) => {
+export const deleteTask = async (req: Request, res: Response) => {
   try {
+    const user = req.user as Express.User;
     const { taskId } = req.body;
-    if (!taskId) return res.status(422).json({ message: "Task ID is Required", code: "MISSING_FIELDS" });
+    if (!taskId) {
+      resMissingFields(res, "Task ID");
+      return;
+    }
 
     const task = await findByIdAndSanitize(Task, taskId);
-    if (!task) return resTaskNotFound(res);
-
+    if (!task) {
+      resTaskNotFound(res);
+      return;
+    }
     const goal = await findByIdAndSanitize(Goal, task.goalId);
-    if (!goal) return resGoalNotFound(res);
+    if (!goal) {
+      resGoalNotFound(res);
+      return;
+    }
 
-    if (req.user.id !== goal.userId) {
-      return resInvalidAuth(res);
+    if (user.id !== goal.userId) {
+      resInvalidAuth(res);
+      return;
     }
 
     await updateByIdAndSanitize(

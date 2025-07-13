@@ -1,5 +1,4 @@
-import { AuthRequest } from "../../types/types";
-import { Response } from "express";
+import { Response, Request } from "express";
 import { createAndSanitize, findAndSanitize, findOneAndSanitize, insertManyAndSanitize } from "../../utils/mongooseUtils";
 import Goal from "../../models/Goal";
 import crypto from "crypto";
@@ -10,18 +9,28 @@ import { GoogleGenAI, Type } from "@google/genai";
 import handleError from "../../utils/handleError";
 import { sanitizeQuery } from "../../utils/sanitizeQuery";
 
-export const generateTask = async (req: AuthRequest, res: Response) => {
+export const generateTask = async (req: Request, res: Response) => {
   try {
     const { goalId, query } = req.body;
-    if (!goalId) return res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" });
-
-    const goal = await Goal.findById(goalId).populate("tasks");
-    if (!goal) return res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
-    if (req.user.id !== goal.userId.toString()) {
-      return res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
+    if (!goalId) {
+      res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" });
+      return;
     }
 
-    if (!query) return res.status(400).json({ message: "Query are required", code: "MISSING_FIELDS" });
+    const goal = await Goal.findById(goalId).populate("tasks");
+    if (!goal) {
+      res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
+      return;
+    }
+    if (req.user!.id !== goal.userId.toString()) {
+      res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
+      return;
+    }
+
+    if (!query) {
+      res.status(400).json({ message: "Query are required", code: "MISSING_FIELDS" });
+      return;
+    }
     const queryHashed = crypto.createHash("sha256").update(query.toLowerCase().trim()).digest("hex");
 
     const aiCache = await findOneAndSanitize(AiCache, { queryHash: queryHashed });
@@ -40,7 +49,8 @@ export const generateTask = async (req: AuthRequest, res: Response) => {
       goal.tasks.push(...newTask.map((task) => task.id));
       await goal.save();
       const goalPopulated = { ...sanitizeQuery(goal), tasks: sanitizeQuery([...newTask, ...goal.tasks] as ITaskDocument[]) };
-      return res.status(200).json({ ...goalPopulated, notification: `${newTask.length} tasks created` });
+      res.status(200).json({ ...goalPopulated, notification: `${newTask.length} tasks created` });
+      return;
     }
 
     const prevTasks = await findAndSanitize(Task, { goalId: goal.id }, { project: { task: 1, description: 1, difficulty: 1, _id: 0 } });

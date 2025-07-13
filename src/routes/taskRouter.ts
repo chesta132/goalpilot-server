@@ -1,13 +1,15 @@
-import { RequestHandler, Router } from "express";
+import { Router } from "express";
 import { authMiddleware } from "../middlewares/auth";
 import { createTask } from "../controllers/task/createTask";
 import { editTask } from "../controllers/task/editTask";
 import { deleteTask } from "../controllers/task/deleteTask";
 import { restoreTask } from "../controllers/task/restoreTask";
+import { getTask } from "../controllers/task/getTask";
 export const taskRouter = Router();
 
-taskRouter.use(authMiddleware as RequestHandler);
-taskRouter.post("/", createTask as RequestHandler);
-taskRouter.put("/", editTask as RequestHandler);
-taskRouter.delete("/", deleteTask as RequestHandler);
-taskRouter.put("/restore", restoreTask as RequestHandler);
+taskRouter.use(authMiddleware);
+taskRouter.get("/", getTask);
+taskRouter.post("/", createTask);
+taskRouter.put("/", editTask);
+taskRouter.delete("/", deleteTask);
+taskRouter.put("/restore", restoreTask);

@@ -1,22 +1,29 @@
 import Goal, { IGoal, IGoalDocument } from "../../models/Goal";
-import { AuthRequest } from "../../types/types";
-import { Response } from "express";
+import { Response, Request } from "express";
 import handleError from "../../utils/handleError";
 import { sanitizeQuery } from "../../utils/sanitizeQuery";
 import { resGoalNotFound, resInvalidAuth, resMissingFields } from "../../utils/resUtils";
 import { updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
-export const editGoal = async (req: AuthRequest, res: Response) => {
+export const editGoal = async (req: Request, res: Response) => {
   try {
+    const user = req.user as Express.User;
     const { goalId, color, title, description, targetDate, progress, status, isPublic }: IGoal & { goalId: string } = req.body;
-    if (!goalId) return resMissingFields(res, "Goal id");
+    if (!goalId) {
+      resMissingFields(res, "Goal id");
+      return;
+    }
 
     const rawGoal = await Goal.findById(goalId);
-    if (!rawGoal) return resGoalNotFound(res);
+    if (!rawGoal) {
+      resGoalNotFound(res);
+      return;
+    }
     const goal = sanitizeQuery(rawGoal) as IGoalDocument;
 
-    if (req.user.id !== goal.userId) {
-      return resInvalidAuth(res);
+    if (user.id !== goal.userId) {
+      resInvalidAuth(res);
+      return;
     }
 
     const updatedGoal = await updateByIdAndSanitize(
@@ -33,7 +40,10 @@ export const editGoal = async (req: AuthRequest, res: Response) => {
       },
       { options: { new: true, runValidators: true }, populate: { path: "tasks" } }
     );
-    if (!updatedGoal) return resGoalNotFound(res);
+    if (!updatedGoal) {
+      resGoalNotFound(res);
+      return;
+    }
 
     res.status(200).json({ ...updatedGoal, notification: `${updatedGoal!.title} updated` });
   } catch (err) {

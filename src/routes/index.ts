@@ -1,6 +1,6 @@
 import { authMiddleware } from "../middlewares/auth";
 import authRouter from "./authRouter";
-import { RequestHandler, Router } from "express";
+import { Router } from "express";
 import { userRouter } from "./userRouter";
 import { goalRouter } from "./goalRouter";
 import { taskRouter } from "./taskRouter";
@@ -13,7 +13,7 @@ router.use("/goal", goalRouter);
 router.use("/task", taskRouter);
 router.use("/ai", aiRouter);
 
-router.get("/authz", authMiddleware as RequestHandler, (req, res) => {
+router.get("/authz", authMiddleware, (req, res) => {
   res.json("Auth valid");
 });
 

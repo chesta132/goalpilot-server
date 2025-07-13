@@ -1,3 +1,4 @@
+/// <reference path="./types/custom.d.ts" />
 import { config } from "dotenv";
 config();
 import express from "express";
@@ -25,7 +26,7 @@ app.use(express.json());
 app.use(
   cors({
     credentials: true,
-    origin: process.env.CLIENT_URL,
+    origin: process.env.CLIENT_URL_DEV,
   })
 );
 app.use(
@@ -34,6 +35,10 @@ app.use(
     limit: 150,
     standardHeaders: true,
     legacyHeaders: false,
+    message: {
+      title: "Too many requests",
+      message: "Too many requests, please try again later",
+    },
   })
 );
 app.use(

@@ -1,20 +1,19 @@
 import { Response, Request } from "express";
 import handleError from "../../utils/handleError";
-import Task from "../../models/Task";
 import Goal from "../../models/Goal";
 import { resGoalNotFound, resInvalidAuth, resMissingFields, resTaskNotFound } from "../../utils/resUtils";
-import { findByIdAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
+import Task from "../../models/Task";
+import { findByIdAndSanitize } from "../../utils/mongooseUtils";
 
-export const restoreTask = async (req: Request, res: Response) => {
+export const getTask = async (req: Request, res: Response) => {
   try {
-    const user = req.user as Express.User;
-    const { taskId } = req.body;
+    const { taskId } = req.query;
     if (!taskId) {
       resMissingFields(res, "Task id");
       return;
     }
 
-    const task = await findByIdAndSanitize(Task, taskId);
+    const task = await findByIdAndSanitize(Task, taskId.toString());
     if (!task) {
       resTaskNotFound(res);
       return;
@@ -26,15 +25,13 @@ export const restoreTask = async (req: Request, res: Response) => {
       return;
     }
 
-    if (goal.userId !== user.id) {
+    if (req.user!.id !== goal.userId) {
       resInvalidAuth(res);
       return;
     }
 
-    await updateByIdAndSanitize(Task, task.id, { isRecycled: false, deleteAt: null }, { options: { new: true, runValidators: true } });
-    res.status(200).json({ notification: `${task.task} restored` });
+    res.status(200).json(task);
   } catch (err) {
-    console.error(err);
     handleError(err, res);
   }
 };

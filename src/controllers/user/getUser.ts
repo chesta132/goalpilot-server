@@ -1,18 +1,19 @@
 import Goal from "../../models/Goal";
 import User, { IUserDocGoalsAndTasks } from "../../models/User";
-import { AuthRequest } from "../../types/types";
-import { Response } from "express";
+import { Response, Request } from "express";
 import handleError from "../../utils/handleError";
 import { existingGoalsAndTasks } from "../../utils/filterExisting";
 import { resGoalNotFound, resUserNotFound } from "../../utils/resUtils";
 import { findAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
-export const getUser = async (req: AuthRequest, res: Response) => {
+export const getUser = async (req: Request, res: Response) => {
   try {
-    const user = req.user;
-
+    const user = req.user as Express.User;
     const goals = await findAndSanitize(Goal, { userId: user.id }, { sort: { _id: -1 } });
-    if (!goals) return resGoalNotFound(res);
+    if (!goals) {
+      resGoalNotFound(res);
+      return;
+    }
 
     const goalsId = goals.map((goal) => goal.id);
     const updatedUser = (await updateByIdAndSanitize(
@@ -21,7 +22,10 @@ export const getUser = async (req: AuthRequest, res: Response) => {
       { lastActive: new Date(), status: "online", goals: goalsId },
       { options: { new: true, runValidators: true }, populate: { path: "goals", populate: { path: "tasks" } } }
     )) as IUserDocGoalsAndTasks | null;
-    if (!updatedUser) return resUserNotFound(res);
+    if (!updatedUser) {
+      resUserNotFound(res);
+      return;
+    }
 
     const userResponse = { ...updatedUser, goals: existingGoalsAndTasks(updatedUser.goals) };
     res.status(200).json(userResponse);

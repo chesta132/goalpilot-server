@@ -1,19 +1,22 @@
-import { AuthRequest } from "../../types/types";
-import { Response } from "express";
+import { Response, Request } from "express";
 import handleError from "../../utils/handleError";
 import User from "../../models/User";
 import { resUserNotFound } from "../../utils/resUtils";
 import { updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
-export const heartbeat = async (req: AuthRequest, res: Response) => {
+export const heartbeat = async (req: Request, res: Response) => {
   try {
-    const user = await updateByIdAndSanitize(
+    const user = req.user as Express.User;
+    const userPopulated = await updateByIdAndSanitize(
       User,
-      req.user.id,
+      user.id,
       { status: "online", lastActive: new Date() },
       { options: { new: true, runValidators: true } }
     );
-    if (!user) return resUserNotFound(res);
+    if (!userPopulated) {
+      resUserNotFound(res);
+      return;
+    }
     res.status(204).send();
   } catch (err) {
     handleError(err, res);

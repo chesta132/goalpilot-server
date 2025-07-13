@@ -1,23 +1,28 @@
 import Goal from "../../models/Goal";
 import Task from "../../models/Task";
-import { AuthRequest } from "../../types/types";
-import { Response } from "express";
+import { Response, Request } from "express";
 import handleError from "../../utils/handleError";
 import { generateReward } from "../../utils/levelingUtils";
 import { resGoalNotFound, resInvalidAuth, resMissingFields } from "../../utils/resUtils";
 import { createAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
-export const createTask = async (req: AuthRequest, res: Response) => {
+export const createTask = async (req: Request, res: Response) => {
   try {
+    const user = req.user as Express.User;
     const { goalId, task, description, targetDate, difficulty } = req.body;
-    if (!goalId || !task || !description) return resMissingFields(res, "Goal id, task title, task description");
+    if (!goalId || !task || !description) {
+      resMissingFields(res, "Goal id, task title, task description");
+      return;
+    }
 
     const goal = await Goal.findById(goalId);
     if (!goal) {
-      return resGoalNotFound(res);
+      resGoalNotFound(res);
+      return;
     }
-    if (req.user.id !== goal.userId.toString()) {
-      return resInvalidAuth(res);
+    if (user.id !== goal.userId.toString()) {
+      resInvalidAuth(res);
+      return;
     }
 
     const rewardPoints = generateReward(req.body);

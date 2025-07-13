@@ -1,26 +1,28 @@
-import { Response, NextFunction } from "express";
+import { Response, Request, NextFunction } from "express";
 import { verifyAccessToken, verifyRefreshToken, createAccessToken } from "../utils/tokenUtils";
 import User from "../models/User";
 import { resAccessToken } from "../utils/resCookie";
-import { AuthRequest, UserRole } from "../types/types";
+import { UserRole } from "../types/types";
 import TokenBlacklist from "../models/TokenBlacklist";
 import handleError from "../utils/handleError";
 import { resInvalidRefToken, resInvalidRole, resTokenBlacklisted, resUserNotFound } from "../utils/resUtils";
 import { findByIdAndSanitize } from "../utils/mongooseUtils";
 
-export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // refresh token validation
     const refreshToken = req.cookies?.refreshToken;
     const refreshPayload = verifyRefreshToken(refreshToken);
 
     if (!refreshPayload) {
-      return resInvalidRefToken(res);
+      resInvalidRefToken(res);
+      return;
     }
 
     const blacklistedToken = await TokenBlacklist.findOne({ refreshToken });
     if (blacklistedToken) {
-      return resTokenBlacklisted(res);
+      resTokenBlacklisted(res);
+      return;
     }
 
     // acccess token validation
@@ -31,7 +33,8 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
       // Check if refresh token exists in database
       const user = await findByIdAndSanitize(User, refreshPayload.userId as string);
       if (!user) {
-        return resInvalidRefToken(res);
+        resInvalidRefToken(res);
+        return;
       }
 
       // Generate new access token
@@ -48,7 +51,8 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
 
     const user = await findByIdAndSanitize(User, payload.userId as string);
     if (!user) {
-      return resUserNotFound(res);
+      resUserNotFound(res);
+      return;
     }
 
     req.user = user;
@@ -59,9 +63,11 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
 };
 
 export const requireRole = (roles: UserRole[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (!roles.includes(req.user.role)) {
-      return resInvalidRole(res);
+  return (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as Express.User;
+    if (!roles.includes(user.role)) {
+      resInvalidRole(res);
+      return;
     }
 
     next();

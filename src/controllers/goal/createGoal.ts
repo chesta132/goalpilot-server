@@ -1,16 +1,17 @@
 import Goal, { IGoal } from "../../models/Goal";
-import { AuthRequest } from "../../types/types";
-import { Response } from "express";
+import { Response, Request } from "express";
 import handleError from "../../utils/handleError";
 import { resMissingFields } from "../../utils/resUtils";
 import { createAndSanitize } from "../../utils/mongooseUtils";
 
-export const createGoal = async (req: AuthRequest, res: Response) => {
+export const createGoal = async (req: Request, res: Response) => {
   try {
+    const user = req.user as Express.User;
     const { title, description, targetDate, isPublic, color, status }: IGoal = req.body;
-    if (!title || !description) return resMissingFields(res, "Title and description");
-
-    const user = req.user;
+    if (!title || !description) {
+      resMissingFields(res, "Title and description");
+      return;
+    }
 
     const newGoal = await createAndSanitize(Goal, {
       userId: user._id,
