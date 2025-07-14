@@ -9,6 +9,7 @@ export interface IGoal {
   description: string;
   createdAt: Date;
   targetDate: Date | null;
+  completedAt: Date | null;
   progress: number;
   status: GoalStatus;
   isPublic: boolean;
@@ -48,6 +49,10 @@ const goalSchema = new mongoose.Schema<IGoalDocument>({
     default: Date.now,
   },
   targetDate: {
+    type: Date,
+    default: null,
+  },
+  completedAt: {
     type: Date,
     default: null,
   },

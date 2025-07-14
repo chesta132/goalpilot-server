@@ -26,6 +26,11 @@ export const editGoal = async (req: Request, res: Response) => {
       return;
     }
 
+    let completedAt;
+    if (status === "completed" && goal.completedAt === null) {
+      completedAt = new Date(Date.now());
+    }
+
     const updatedGoal = await updateByIdAndSanitize(
       Goal,
       goal.id,
@@ -37,6 +42,7 @@ export const editGoal = async (req: Request, res: Response) => {
         status,
         isPublic,
         color,
+        completedAt,
       },
       { options: { new: true, runValidators: true }, populate: { path: "tasks" } }
     );
