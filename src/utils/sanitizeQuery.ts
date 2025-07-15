@@ -51,7 +51,8 @@ export const traverseCreateId = (data: any, mongo = true): any => {
 export const sanitizeQuery = <T extends Document<any, any, any> | Document<any, any, any>[]>(queryData: T) => {
   if (Array.isArray(queryData)) {
     const sanitizedData = queryData.map((queryDT) => {
-      const data = queryDT.toObject();
+      let data = queryDT;
+      if (isValidObjectId(queryDT._id)) data = queryDT.toObject();
       return traverseCreateId(traverseAndSanitize(data));
     });
     return sanitizedData;

@@ -60,8 +60,8 @@ export const generateTask = async (req: Request, res: Response) => {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: `${req.body.query}. Please match the language of my query.${
-        stringifyedPrevTasks ? `\nHere is my previous tasks\n${stringifyedPrevTasks}` : ""
+      contents: `Please match the language of my query.\nQuery: ${req.body.query}.${
+        stringifyedPrevTasks ? `\nPrevious tasks: \n${stringifyedPrevTasks}` : ""
       }`,
       config: {
         responseMimeType: "application/json",
