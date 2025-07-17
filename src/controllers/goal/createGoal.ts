@@ -6,7 +6,7 @@ import { createAndSanitize } from "../../utils/mongooseUtils";
 
 export const createGoal = async (req: Request, res: Response) => {
   try {
-    const user = req.user as Express.User;
+    const user = req.user!;
     const { title, description, targetDate, isPublic, color, status }: IGoal = req.body;
     if (!title || !description) {
       resMissingFields(res, "Title and description");

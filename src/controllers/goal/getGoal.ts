@@ -8,7 +8,7 @@ import { findAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtil
 
 export const getGoal = async (req: Request, res: Response) => {
   try {
-    const user = req.user as Express.User;
+    const user = req.user!;
     const { goalId } = req.query;
     if (!goalId) {
       resMissingFields(res, "Goal id");

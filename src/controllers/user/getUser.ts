@@ -8,7 +8,7 @@ import { findAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtil
 
 export const getUser = async (req: Request, res: Response) => {
   try {
-    const user = req.user as Express.User;
+    const user = req.user!;
     const goals = await findAndSanitize(Goal, { userId: user.id }, { sort: { _id: -1 } });
     if (!goals) {
       resGoalNotFound(res);

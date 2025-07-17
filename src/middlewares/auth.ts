@@ -5,7 +5,7 @@ import { resAccessToken } from "../utils/resCookie";
 import { UserRole } from "../types/types";
 import TokenBlacklist from "../models/TokenBlacklist";
 import handleError from "../utils/handleError";
-import { resInvalidRefToken, resInvalidRole, resTokenBlacklisted, resUserNotFound } from "../utils/resUtils";
+import { resInvalidRefToken, resInvalidRole, resInvalidVerified, resTokenBlacklisted, resUserNotFound } from "../utils/resUtils";
 import { findByIdAndSanitize } from "../utils/mongooseUtils";
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
@@ -62,9 +62,15 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+export const requireVerified = (req: Request, res: Response, next: NextFunction) => {
+  console.log(req.user?.verified);
+  if (req.user?.verified) next();
+  else resInvalidVerified(res);
+};
+
 export const requireRole = (roles: UserRole[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    const user = req.user as Express.User;
+    const user = req.user!;
     if (!roles.includes(user.role)) {
       resInvalidRole(res);
       return;

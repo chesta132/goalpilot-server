@@ -8,7 +8,7 @@ import { findOneAndSanitize } from "../../utils/mongooseUtils";
 
 export const getProfile = async (req: Request, res: Response) => {
   try {
-    const user = req.user as Express.User;
+    const user = req.user!;
     const { username } = req.query;
     if (!username) {
       resMissingFields(res, "Username");

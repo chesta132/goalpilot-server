@@ -7,7 +7,7 @@ import { findByIdAndSanitize, updateByIdAndSanitize, updateManyAndSanitize } fro
 
 export const restoreGoal = async (req: Request, res: Response) => {
   try {
-    const user = req.user as Express.User;
+    const user = req.user!;
     const { goalId } = req.body;
     if (!goalId) {
       resMissingFields(res, "Goal id");

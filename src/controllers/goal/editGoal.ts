@@ -7,7 +7,7 @@ import { updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
 export const editGoal = async (req: Request, res: Response) => {
   try {
-    const user = req.user as Express.User;
+    const user = req.user!;
     const { goalId, color, title, description, targetDate, progress, status, isPublic }: IGoal & { goalId: string } = req.body;
     if (!goalId) {
       resMissingFields(res, "Goal id");

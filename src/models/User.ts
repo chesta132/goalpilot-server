@@ -20,6 +20,7 @@ export type TUser = {
   tasksCompleted: number;
   sessions: number;
   refreshToken: string;
+  verified: boolean;
 };
 
 export interface IUserDocument extends TUser, Document {}
@@ -40,6 +41,7 @@ const UserSchema = new mongoose.Schema<IUserDocument>({
     trim: true,
     minlength: 3,
     maxlength: 50,
+    index: 1,
   },
   email: {
     type: String,
@@ -48,6 +50,7 @@ const UserSchema = new mongoose.Schema<IUserDocument>({
     lowercase: true,
     trim: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, "Please enter a valid email"],
+    index: 1,
   },
   password: {
     type: String,
@@ -107,6 +110,10 @@ const UserSchema = new mongoose.Schema<IUserDocument>({
     type: Number,
     default: 0,
     min: 0,
+  },
+  verified: {
+    type: Boolean,
+    default: false,
   },
 });
 

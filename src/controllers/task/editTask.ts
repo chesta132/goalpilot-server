@@ -8,7 +8,7 @@ import { findByIdAndSanitize, updateByIdAndSanitize } from "../../utils/mongoose
 
 export const editTask = async (req: Request, res: Response) => {
   try {
-    const user = req.user as Express.User;
+    const user = req.user!;
     const { taskId, task, description, isCompleted, targetDate, difficulty } = req.body;
     if (!taskId) {
       resMissingFields(res, "Task id");

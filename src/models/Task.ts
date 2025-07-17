@@ -23,6 +23,7 @@ const taskSchema = new mongoose.Schema<ITaskDocument>({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Goal",
     required: true,
+    index: -1,
   },
   task: {
     type: String,
@@ -73,6 +74,7 @@ const taskSchema = new mongoose.Schema<ITaskDocument>({
   deleteAt: {
     type: Date,
     default: null,
+    index: 1,
   },
 });
 

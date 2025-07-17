@@ -30,6 +30,7 @@ const goalSchema = new mongoose.Schema<IGoalDocument>({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
+    index: -1,
   },
   title: {
     type: String,
@@ -89,6 +90,7 @@ const goalSchema = new mongoose.Schema<IGoalDocument>({
   deleteAt: {
     type: Date,
     default: null,
+    index: { expires: "0s" },
   },
 });
 

@@ -7,7 +7,7 @@ import { findByIdAndSanitize, updateByIdAndSanitize } from "../../utils/mongoose
 
 export const deleteTask = async (req: Request, res: Response) => {
   try {
-    const user = req.user as Express.User;
+    const user = req.user!;
     const { taskId } = req.body;
     if (!taskId) {
       resMissingFields(res, "Task ID");

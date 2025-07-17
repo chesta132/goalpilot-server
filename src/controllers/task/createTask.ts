@@ -8,7 +8,7 @@ import { createAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUt
 
 export const createTask = async (req: Request, res: Response) => {
   try {
-    const user = req.user as Express.User;
+    const user = req.user!;
     const { goalId, task, description, targetDate, difficulty } = req.body;
     if (!goalId || !task || !description) {
       resMissingFields(res, "Goal id, task title, task description");

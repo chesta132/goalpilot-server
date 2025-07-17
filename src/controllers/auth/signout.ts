@@ -5,18 +5,18 @@ import { Response, Request } from "express";
 import jwt from "jsonwebtoken";
 import handleError from "../../utils/handleError";
 import { resInvalidRefToken } from "../../utils/resUtils";
-import { updateOneAndSanitize } from "../../utils/mongooseUtils";
+import { updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
 export const signout = async (req: Request, res: Response) => {
   try {
-    const user = req.user as Express.User;
+    const user = req.user!;
     const verifiedPayload = verifyRefreshToken(req.cookies?.refreshToken);
     if (!verifiedPayload) {
       resInvalidRefToken(res);
-      return 
+      return;
     }
 
-    const updatedUser = await updateOneAndSanitize(
+    const updatedUser = await updateByIdAndSanitize(
       User,
       user.id,
       { lastActive: new Date(), status: "offline" },

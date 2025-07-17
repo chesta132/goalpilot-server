@@ -27,6 +27,7 @@ const AiCacheSchema = new mongoose.Schema<IAiCacheDocument>({
     type: String,
     required: true,
     trim: true,
+    index: 1,
   },
   aiResponse: [
     {
@@ -58,6 +59,7 @@ const AiCacheSchema = new mongoose.Schema<IAiCacheDocument>({
   expiresAt: {
     type: Date,
     default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    index: { expires: "0s" },
   },
 });
 

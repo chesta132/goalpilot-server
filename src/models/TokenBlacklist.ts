@@ -21,6 +21,7 @@ const tokenBlacklistSchema = new mongoose.Schema<ITokenBlacklistDocument>({
   deleteAt: {
     type: Date,
     required: true,
+    index: { expires: "0s" },
   },
 });
 

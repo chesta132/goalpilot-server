@@ -7,6 +7,9 @@ import { resAccessToken, resRefreshToken, resRefreshTokenSessionOnly } from "../
 import { ErrorResponse } from "../../types/types";
 import { resMissingFields } from "../../utils/resUtils";
 import { createAndSanitize } from "../../utils/mongooseUtils";
+import { generateOTP, sendOTPEmail } from "../../utils/email";
+import OTP from "../../models/OTP";
+import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 
 export const signup = async (req: Request, res: Response) => {
   try {
@@ -26,12 +29,18 @@ export const signup = async (req: Request, res: Response) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await createAndSanitize(User, {
+    const rawNewUser = await User.create({
       username,
       email,
       password: hashedPassword,
       fullName,
     });
+    const newUser = sanitizeUserQuery(rawNewUser);
+
+    const otpToken = generateOTP();
+    await createAndSanitize(OTP, { userId: newUser.id, otp: otpToken, type: "VERIFY" });
+    await sendOTPEmail(email, otpToken, fullName);
+
     const accessToken = createAccessToken({ userId: newUser._id, role: newUser.role! });
     const refreshToken = createRefreshToken({ userId: newUser._id, role: newUser.role! }, rememberMe ? undefined : "3d");
 

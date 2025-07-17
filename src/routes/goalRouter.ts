@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authMiddleware } from "../middlewares/auth";
+import { authMiddleware, requireVerified } from "../middlewares/auth";
 import { createGoal } from "../controllers/goal/createGoal";
 import { getGoal } from "../controllers/goal/getGoal";
 import { editGoal } from "../controllers/goal/editGoal";
@@ -8,6 +8,7 @@ import { restoreGoal } from "../controllers/goal/restoreGoal";
 export const goalRouter = Router();
 
 goalRouter.use(authMiddleware);
+goalRouter.use(requireVerified);
 goalRouter.post("/", createGoal);
 goalRouter.get("/", getGoal);
 goalRouter.put("/", editGoal);

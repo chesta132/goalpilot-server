@@ -6,7 +6,7 @@ import { updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
 export const heartbeat = async (req: Request, res: Response) => {
   try {
-    const user = req.user as Express.User;
+    const user = req.user!;
     const userPopulated = await updateByIdAndSanitize(
       User,
       user.id,
