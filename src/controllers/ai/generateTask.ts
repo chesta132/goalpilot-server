@@ -8,29 +8,30 @@ import Task, { ITaskDocument } from "../../models/Task";
 import { GoogleGenAI, Type } from "@google/genai";
 import handleError from "../../utils/handleError";
 import { sanitizeQuery } from "../../utils/sanitizeQuery";
+import { resGoalNotFound, resInvalidAuth, resMissingFields } from "../../utils/resUtils";
 
 export const generateTask = async (req: Request, res: Response) => {
   try {
     const { goalId, query } = req.body;
     if (!goalId) {
-      res.status(422).json({ message: "Goal ID is Required", code: "MISSING_FIELDS" });
+      resMissingFields(res, "Goal ID");
+      return;
+    }
+    if (!query) {
+      resMissingFields(res, "Query");
       return;
     }
 
     const goal = await Goal.findById(goalId).populate("tasks");
     if (!goal) {
-      res.status(404).json({ message: "Goal Not Found", code: "GOAL_NOT_FOUND" });
+      resGoalNotFound(res);
       return;
     }
     if (req.user!.id !== goal.userId.toString()) {
-      res.status(401).json({ message: "Authentication Needed", code: "INVALID_AUTH" });
+      resInvalidAuth(res);
       return;
     }
 
-    if (!query) {
-      res.status(400).json({ message: "Query are required", code: "MISSING_FIELDS" });
-      return;
-    }
     const queryHashed = crypto.createHash("sha256").update(query.toLowerCase().trim()).digest("hex");
 
     const aiCache = await findOneAndSanitize(AiCache, { queryHash: queryHashed });
@@ -44,7 +45,7 @@ export const generateTask = async (req: Request, res: Response) => {
           goalId: goal._id,
           rewardPoints: rewardPoints,
         };
-      });
+      }) as ITaskDocument[];
       const newTask = await insertManyAndSanitize(Task, newTaskData);
       goal.tasks.push(...newTask.map((task) => task.id));
       await goal.save();

@@ -63,7 +63,6 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 };
 
 export const requireVerified = (req: Request, res: Response, next: NextFunction) => {
-  console.log(req.user?.verified);
   if (req.user?.verified) next();
   else resInvalidVerified(res);
 };

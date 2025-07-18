@@ -14,7 +14,7 @@ export const createGoal = async (req: Request, res: Response) => {
     }
 
     const newGoal = await createAndSanitize(Goal, {
-      userId: user._id,
+      userId: user.id,
       title,
       description,
       targetDate,

@@ -1,23 +1,23 @@
 import mongoose, { Document, ObjectId } from "mongoose";
 
-type TypeOTP = "VERIFY" | "RESET_PASSWORD";
+type TypeVerification = "VERIFY" | "RESET_PASSWORD" | "OTP";
 
-export interface IOTP {
+export interface IVerification {
   userId: string | ObjectId;
-  otp: string;
+  key: string;
   createdAt: Date;
   deleteAt: Date;
-  type: TypeOTP;
+  type: TypeVerification;
 }
 
-export interface IOTPDocument extends IOTP, Document {}
+export interface IVerificationDocument extends IVerification, Document {}
 
-const otpSchema = new mongoose.Schema<IOTPDocument>({
+const otpSchema = new mongoose.Schema<IVerificationDocument>({
   userId: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
-  otp: { type: String, required: true },
+  key: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
   deleteAt: { type: Date, default: () => new Date(Date.now() + 5 * 60 * 1000), index: { expires: "0s" } },
   type: { type: String, default: "VERIFY" },
 });
 
-export default mongoose.model<IOTPDocument>("Otp", otpSchema);
+export default mongoose.model<IVerificationDocument>("Verification", otpSchema);

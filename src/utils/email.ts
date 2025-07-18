@@ -18,7 +18,7 @@ export const sendOTPEmail = async (email: string, otpCode: string, name: string)
     await transporter.sendMail({
       from: "GoalPilot Team",
       to: email,
-      subject: "Your GoalPilot One-Time Password (OTP)",
+      subject: "GoalPilot One-Time Password (OTP)",
       html: emailTemplate({
         title: "Your One-Time Password (OTP)",
         subtitle: "",
@@ -27,9 +27,31 @@ export const sendOTPEmail = async (email: string, otpCode: string, name: string)
         )},\n\nYou have requested a One-Time Password (OTP) to complete your action on GoalPilot. Please use the following code to proceed:\n\nFor your security, please do not share this OTP with anyone, including GoalPilot employees.`,
         name,
         infoMessage: otpCode,
-        buttonText: "Back to GoalPilot",
-        // nanti ganti
-        buttonHref: `${process.env.CLIENT_URL_DEV}`,
+      }),
+    });
+  } catch (error) {
+    console.error("Email error", error);
+  }
+};
+
+export const sendVerificationEmail = async (email: string, token: string, name: string) => {
+  try {
+    await transporter.sendMail({
+      from: "GoalPilot Team",
+      to: email,
+      subject: "GoalPilot Email Verification",
+      html: emailTemplate({
+        title: "Verify your email",
+        subtitle: "",
+        message: "",
+        name,
+        infoMessage: `Dear ${capitalEachWords(
+          name
+        )},\n\nYou have requested to verify your email address for your GoalPilot account. To complete this action, please click the button below.\n\nFor your security, please do not share this email or its link with anyone, including GoalPilot employees.`,
+        button: {
+          buttonText: "Verify your email",
+          buttonHref: `${process.env.CLIENT_URL_DEV}/verify/email/?token=${token}`,
+        },
       }),
     });
   } catch (error) {
@@ -43,10 +65,12 @@ export function emailTemplate(props: {
   name: string;
   message: string;
   infoMessage: string;
-  buttonText: string;
-  buttonHref: string;
+  button?: {
+    buttonText: string;
+    buttonHref: string;
+  };
 }) {
-  const { title, subtitle, name, message, infoMessage, buttonText, buttonHref } = props;
+  const { title, subtitle, name, message, infoMessage, button } = props;
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -136,7 +160,7 @@ export function emailTemplate(props: {
             display: inline-block;
             padding: 15px 30px;
             background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
+            color: white !important;
             text-decoration: none;
             border-radius: 5px;
             font-weight: 600;
@@ -251,9 +275,12 @@ export function emailTemplate(props: {
             <p>If you have any questions or need assistance, please don't hesitate to reach out to our support team.</p>
             
             <!-- Call to Action Button -->
-            <div class="email-button">
-                <a href="${buttonHref}" class="btn">${buttonText}</a>
-            </div>
+            ${
+              button &&
+              `<div class="email-button">
+                <a href="${button.buttonHref}" class="btn">${button.buttonText}</a>
+              </div>`
+            }
             
             <p>Best regards,<br>
             <strong>GoalPilot Team</strong></p>

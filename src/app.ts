@@ -1,4 +1,4 @@
-/// <reference path="./types/custom.d.ts" />
+/// <reference path="./types/customDeclare.d.ts" />
 import { config } from "dotenv";
 config();
 import express from "express";

@@ -8,6 +8,7 @@ import {
   PopulateOptions,
   ProjectionType,
   QueryOptions,
+  RootFilterQuery,
   SortOrder,
   UpdateQuery,
   UpdateWithAggregationPipeline,
@@ -45,7 +46,7 @@ export const findByIdAndSanitize = async <T extends Document<any, any, any>>(
 
 export const findOneAndSanitize = async <T extends Document<any, any, any>>(
   model: MongooseModel<T>,
-  filter: any,
+  filter: RootFilterQuery<T>,
   settings?: Settings<T>
 ): Promise<T | null> => {
   const rawQuery = await model
@@ -59,7 +60,7 @@ export const findOneAndSanitize = async <T extends Document<any, any, any>>(
 
 export const findAndSanitize = async <T extends Document<any, any, any>>(
   model: MongooseModel<T>,
-  filter: any,
+  filter: RootFilterQuery<T>,
   settings?: Settings<T>
 ): Promise<T[] | null> => {
   const rawQuery = await model
@@ -67,7 +68,7 @@ export const findAndSanitize = async <T extends Document<any, any, any>>(
     .populate(settings?.populate || [])
     .sort(settings?.sort, settings?.sortOptions);
 
-  if (!rawQuery) return null;
+  if (rawQuery.length === 0) return null;
   return sanitizeQuery(rawQuery) as T[];
 };
 
@@ -94,7 +95,7 @@ export const updateByIdAndSanitize = async <T extends Document<any, any, any>>(
 
 export const updateOneAndSanitize = async <T extends Document<any, any, any>>(
   model: MongooseModel<T>,
-  filter: any,
+  filter: RootFilterQuery<T>,
   update: UpdateQuery<T>,
   settings?: Omit<Settings<T>, "project">
 ): Promise<T | null> => {
@@ -109,7 +110,7 @@ export const updateOneAndSanitize = async <T extends Document<any, any, any>>(
 
 export const updateManyAndSanitize = async <T extends Document<any, any, any>>(
   model: MongooseModel<T>,
-  filter: any,
+  filter: RootFilterQuery<T>,
   update: UpdateQuery<T> | UpdateWithAggregationPipeline,
   settings: { sanitize?: boolean; options: MongooseUpdateQueryOptions } & Omit<Settings<T>, "project" | "options">
 ): Promise<T[] | UpdateWriteOpResult | null> => {
@@ -123,14 +124,14 @@ export const updateManyAndSanitize = async <T extends Document<any, any, any>>(
 };
 
 // Create
-export const createAndSanitize = async <T extends Document<any, any, any>>(model: MongooseModel<T>, doc: any): Promise<T> => {
+export const createAndSanitize = async <T extends Document<any, any, any>>(model: MongooseModel<T>, doc: T | Partial<T>): Promise<T> => {
   const rawQuery = await model.create(doc);
   return sanitizeQuery(rawQuery) as T;
 };
 
 export const insertManyAndSanitize = async <T extends Document<any, any, any>>(
   model: MongooseModel<T>,
-  docs: any[],
+  docs: T[] | Partial<T>[],
   settings?: { options?: InsertManyOptions }
 ): Promise<T[]> => {
   const rawQuery = await model.insertMany(docs, settings?.options ?? {});

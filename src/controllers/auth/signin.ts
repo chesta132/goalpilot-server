@@ -31,7 +31,6 @@ export const signin = async (req: Request, res: Response, next: NextFunction) =>
         
         res.cookie("accessToken", accessToken, resAccessToken);
         res.cookie("refreshToken", refreshToken, rememberMe ? resRefreshToken : resRefreshTokenSessionOnly);
-        if (!user.verified) return resInvalidVerified(res);
         
         res.status(200).json(user);
       });

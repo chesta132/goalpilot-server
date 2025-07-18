@@ -6,10 +6,8 @@ import { createAccessToken, createRefreshToken } from "../../utils/tokenUtils";
 import { resAccessToken, resRefreshToken, resRefreshTokenSessionOnly } from "../../utils/resCookie";
 import { ErrorResponse } from "../../types/types";
 import { resMissingFields } from "../../utils/resUtils";
-import { createAndSanitize } from "../../utils/mongooseUtils";
-import { generateOTP, sendOTPEmail } from "../../utils/email";
-import OTP from "../../models/OTP";
 import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
+import { sendVerifyEmail } from "./resendVerifyEmailToken";
 
 export const signup = async (req: Request, res: Response) => {
   try {
@@ -35,12 +33,9 @@ export const signup = async (req: Request, res: Response) => {
       password: hashedPassword,
       fullName,
     });
-    const newUser = sanitizeUserQuery(rawNewUser);
+    const newUser = sanitizeUserQuery(rawNewUser) as Express.User;
 
-    const otpToken = generateOTP();
-    await createAndSanitize(OTP, { userId: newUser.id, otp: otpToken, type: "VERIFY" });
-    await sendOTPEmail(email, otpToken, fullName);
-
+    await sendVerifyEmail(newUser);
     const accessToken = createAccessToken({ userId: newUser._id, role: newUser.role! });
     const refreshToken = createRefreshToken({ userId: newUser._id, role: newUser.role! }, rememberMe ? undefined : "3d");
 

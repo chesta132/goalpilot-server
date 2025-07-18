@@ -27,7 +27,7 @@ export const createTask = async (req: Request, res: Response) => {
 
     const rewardPoints = generateReward(req.body);
     const newTask = await createAndSanitize(Task, {
-      goalId: goal._id,
+      goalId: goal.id,
       task,
       description,
       targetDate,
