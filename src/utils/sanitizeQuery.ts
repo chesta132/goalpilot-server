@@ -52,14 +52,22 @@ export const sanitizeQuery = <T extends Document<any, any, any> | Document<any, 
   if (Array.isArray(queryData)) {
     const sanitizedData = queryData.map((queryDT) => {
       let data = queryDT;
-      if (isValidObjectId(queryDT._id)) data = queryDT.toObject();
+      try {
+        data = queryDT.toObject();
+      } catch {
+        console.log(`Type of queryData ${queryDT.id} is ${typeof queryData}`);
+      }
       return traverseCreateId(traverseAndSanitize(data));
     });
     return sanitizedData;
   }
 
   let data = queryData as Document<any, any, any>;
-  if (isValidObjectId(data._id)) data = queryData.toObject();
+  try {
+    data = queryData.toObject();
+  } catch {
+    console.log(`Type of queryData ${queryData.id} is ${typeof queryData}`);
+  }
   const sanitizedData = traverseCreateId(traverseAndSanitize(data));
   return sanitizedData;
 };
