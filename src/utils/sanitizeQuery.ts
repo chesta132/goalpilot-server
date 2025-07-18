@@ -58,7 +58,8 @@ export const sanitizeQuery = <T extends Document<any, any, any> | Document<any, 
     return sanitizedData;
   }
 
-  const data = queryData.toObject();
+  let data = queryData as Document<any, any, any>;
+  if (isValidObjectId(data._id)) data = queryData.toObject();
   const sanitizedData = traverseCreateId(traverseAndSanitize(data));
   return sanitizedData;
 };
@@ -68,6 +69,7 @@ export const sanitizeUserQuery = <T extends Document<any, any, any>, Z extends P
   delete data.password;
   delete data.googleId;
   if (isGuest) {
+    delete data.gmail;
     delete data.email;
     if (data.goals && data.goals.length > 0) data.goals = data.goals.filter((goal) => goal.isPublic);
   }

@@ -20,6 +20,12 @@ export const signup = async (req: Request, res: Response) => {
     if (await User.findOne({ email })) {
       res.status(460).json({ code: "INVALID_EMAIL_FIELD", message: "Email is already in use" } as ErrorResponse);
       return;
+    } else if (await User.findOne({ gmail: email })) {
+      res.status(460).json({
+        code: "INVALID_EMAIL_FIELD",
+        message: "Email is already bind with google account, please bind on account settings",
+      } as ErrorResponse);
+      return;
     }
     if (await User.findOne({ username })) {
       res.status(460).json({ code: "INVALID_USERNAME_FIELD", message: "Username is already in use" } as ErrorResponse);
@@ -36,8 +42,8 @@ export const signup = async (req: Request, res: Response) => {
     const newUser = sanitizeUserQuery(rawNewUser) as Express.User;
 
     await sendVerifyEmail(newUser);
-    const accessToken = createAccessToken({ userId: newUser._id, role: newUser.role! });
-    const refreshToken = createRefreshToken({ userId: newUser._id, role: newUser.role! }, rememberMe ? undefined : "3d");
+    const accessToken = createAccessToken({ userId: newUser._id, role: newUser.role });
+    const refreshToken = createRefreshToken({ userId: newUser._id, role: newUser.role }, rememberMe ? undefined : "3d");
 
     res.cookie("accessToken", accessToken, resAccessToken);
     res.cookie("refreshToken", refreshToken, rememberMe ? resRefreshToken : resRefreshTokenSessionOnly);

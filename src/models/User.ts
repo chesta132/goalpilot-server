@@ -7,6 +7,7 @@ export type TUser = {
   username: string;
   email: string;
   password: string;
+  gmail: string;
   googleId: string;
   fullName: string;
   role: UserRole;
@@ -45,11 +46,18 @@ const UserSchema = new mongoose.Schema<IUserDocument>({
   },
   email: {
     type: String,
-    required: true,
     unique: true,
     lowercase: true,
     trim: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, "Please enter a valid email"],
+    index: 1,
+  },
+  gmail: {
+    type: String,
+    unique: true,
+    lowercase: true,
+    trim: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, "Please enter a valid gmail"],
     index: 1,
   },
   password: {
