@@ -10,6 +10,7 @@ import { verifyEmail } from "../controllers/auth/verifyEmail";
 import { bindLocal } from "../controllers/auth/bindLocal";
 import { resendOTP } from "../controllers/auth/resendOTP";
 import { changeEmail } from "../controllers/auth/changeEmail";
+import { changePassword } from "../controllers/auth/changePassword";
 const authRouter = Router();
 
 authRouter.post("/signup", signup);
@@ -37,6 +38,8 @@ authRouter.get(
 );
 
 authRouter.post("/send-otp", resendOTP);
+
 authRouter.post("/update-email", changeEmail);
+authRouter.post("/update-password", requireVerified, changePassword);
 
 export default authRouter;

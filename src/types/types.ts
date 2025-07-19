@@ -29,7 +29,8 @@ export type CodeFieldError =
   | "INVALID_EMAIL_FIELD"
   | "INVALID_USERNAME_FIELD"
   | "INVALID_OTP_FIELD"
-  | "INVALID_NEW_EMAIL_FIELD";
+  | "INVALID_NEW_EMAIL_FIELD"
+  | "INVALID_NEW_PASSWORD_FIELD";
 export type CodeDatabaseError = "USER_NOT_FOUND" | "GOAL_NOT_FOUND" | "TASK_NOT_FOUND" | "OTP_NOT_FOUND" | "VALIDATION_ERROR" | "VERSION_CONFLICT";
 
 export type CodeError = CodeAuthError | CodeFieldError | CodeDatabaseError | "SERVER_ERROR";

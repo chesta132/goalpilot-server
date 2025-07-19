@@ -37,7 +37,7 @@ export const changeEmail = async (req: Request, res: Response) => {
       return;
     }
 
-    const otp = await findOneAndSanitize(Verification, { key: token, type: "CHANGE_EMAIL_OTP" });
+    const otp = await findOneAndSanitize(Verification, { key: token, type: "CHANGE_EMAIL_OTP", userId: user.id });
     if (!otp) {
       resInvalidOTP(res);
       return;

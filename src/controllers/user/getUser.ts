@@ -5,6 +5,7 @@ import handleError from "../../utils/handleError";
 import { existingGoalsAndTasks } from "../../utils/filterExisting";
 import { resGoalNotFound, resUserNotFound } from "../../utils/resUtils";
 import { findAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
+import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 
 export const getUser = async (req: Request, res: Response) => {
   try {
@@ -27,7 +28,7 @@ export const getUser = async (req: Request, res: Response) => {
       return;
     }
 
-    const userResponse = { ...updatedUser, goals: existingGoalsAndTasks(updatedUser.goals) };
+    const userResponse = { ...sanitizeUserQuery(updatedUser), goals: existingGoalsAndTasks(updatedUser.goals) };
     res.status(200).json(userResponse);
   } catch (err) {
     handleError(err, res);

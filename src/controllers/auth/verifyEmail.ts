@@ -4,8 +4,9 @@ import { findOneAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseU
 import User from "../../models/User";
 import { ErrorResponse } from "../../types/types";
 import Verification from "../../models/Verification";
-import { resInvalidAuth, resMissingFields } from "../../utils/resUtils";
+import { resInvalidAuth, resMissingFields, resUserNotFound } from "../../utils/resUtils";
 import { decrypt } from "../../utils/cryptoUtils";
+import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 
 export const verifyEmail = async (req: Request, res: Response) => {
   const resInvalidToken = () =>
@@ -28,7 +29,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
       return;
     }
 
-    const verification = await findOneAndSanitize(Verification, { key: token, type: "VERIFY" });
+    const verification = await findOneAndSanitize(Verification, { key: token, type: "VERIFY", userId: user.id });
     if (!verification) {
       resInvalidToken();
       return;
@@ -36,7 +37,11 @@ export const verifyEmail = async (req: Request, res: Response) => {
 
     if (verification.key === token) {
       const updatedUser = await updateByIdAndSanitize(User, user.id, { verified: true }, { options: { new: true, runValidators: true } });
-      res.json(updatedUser);
+      if (!updatedUser) {
+        resUserNotFound(res);
+        return;
+      }
+      res.json(sanitizeUserQuery(updatedUser));
       return;
     }
     resInvalidToken();
