@@ -10,6 +10,7 @@ import { verifyEmail } from "../controllers/auth/verifyEmail";
 import { bindLocal } from "../controllers/auth/bindLocal";
 import { resendOTP } from "../controllers/auth/resendOTP";
 import { changeEmail } from "../controllers/auth/changeEmail";
+import { resetPassword } from "../controllers/auth/resetPassword";
 import { changePassword } from "../controllers/auth/changePassword";
 const authRouter = Router();
 
@@ -26,10 +27,10 @@ authRouter.get(
 authRouter.use(authMiddleware);
 authRouter.post("/signout", signout);
 
-authRouter.get("/resend-email-verif", resendVerifyEmail);
+authRouter.get("/send-email-verif", resendVerifyEmail);
 authRouter.post("/verify-email", verifyEmail);
 
-authRouter.post("/bind-local", bindLocal);
+authRouter.put("/bind-local", bindLocal);
 authRouter.get("/google-bind", passport.authenticate("google-bind", { scope: ["profile", "email"] }));
 authRouter.get(
   "/google-bind/callback",
@@ -39,7 +40,10 @@ authRouter.get(
 
 authRouter.post("/send-otp", resendOTP);
 
-authRouter.post("/update-email", changeEmail);
-authRouter.post("/update-password", requireVerified, changePassword);
+authRouter.put("/update-email", changeEmail);
+
+authRouter.use(requireVerified);
+authRouter.put("/reset-password", resetPassword);
+authRouter.put("/update-password", changePassword);
 
 export default authRouter;

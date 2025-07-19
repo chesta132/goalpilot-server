@@ -1,22 +1,19 @@
 import { Request, Response } from "express";
 import handleError from "../../utils/handleError";
 import { ErrorResponse } from "../../types/types";
-import { resMissingFields, resUserNotFound } from "../../utils/resUtils";
-import { updateByIdAndSanitize } from "../../utils/mongooseUtils";
+import { resInvalidOTP, resMissingFields, resUserNotFound } from "../../utils/resUtils";
+import { findOneAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
+import Verification from "../../models/Verification";
 import User from "../../models/User";
 import bcrypt from "bcrypt";
 import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 
-export const changePassword = async (req: Request, res: Response) => {
+export const resetPassword = async (req: Request, res: Response) => {
   try {
     const user = req.user!;
-    const { newPassword, oldPassword } = req.body;
-    if (!newPassword || !oldPassword) {
-      resMissingFields(res, "New password, old password");
-      return;
-    }
-    if (!(await bcrypt.compare(oldPassword, user.password))) {
-      res.status(403).json({ message: "Old password is wrong", code: "INVALID_OLD_PASSWORD_FIELD" } as ErrorResponse);
+    const { newPassword, token } = req.body;
+    if (!newPassword || !token) {
+      resMissingFields(res, "New password, token");
       return;
     }
 
@@ -27,13 +24,19 @@ export const changePassword = async (req: Request, res: Response) => {
       return;
     }
 
+    const otp = await findOneAndSanitize(Verification, { key: token, type: "RESET_PASSWORD_OTP", userId: user.id });
+    if (!otp) {
+      resInvalidOTP(res);
+      return;
+    }
     const updatedUser = await updateByIdAndSanitize(User, user.id, { password }, { options: { new: true, runValidators: true } });
     if (!updatedUser) {
       resUserNotFound(res);
       return;
     }
+    await Verification.findOneAndDelete({ key: token, type: "RESET_PASSWORD_OTP", userId: user.id });
 
-    res.json({ ...sanitizeUserQuery(updatedUser), notification: "Successfully update new password" });
+    res.json({ ...sanitizeUserQuery(updatedUser), notification: "Successfully reset and update new password" });
   } catch (err) {
     handleError(err, res);
   }

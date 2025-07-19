@@ -44,9 +44,12 @@ export const resInvalidVerified = (res: Response) =>
   } as ErrorResponse);
 export const resInvalidOTP = (res: Response) =>
   res.status(400).json({
+    title: "Invalid OTP",
     message: "Invalid or expired OTP. Please request a new OTP code.",
     code: "INVALID_OTP_FIELD",
   } as ErrorResponse);
+export const resIsVerified = (res: Response) =>
+  res.status(400).json({ message: "Your email has been verified", code: "IS_VERIFIED", title: "You has been verified" } as ErrorResponse);
 
 // Field
 export const resMissingFields = (res: Response, fields: string) =>

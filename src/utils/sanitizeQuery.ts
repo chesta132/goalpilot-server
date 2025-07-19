@@ -1,4 +1,4 @@
-import { Document, isValidObjectId } from "mongoose";
+import mongoose, { Document, isValidObjectId } from "mongoose";
 import { IUserDocGoalsAndTasks } from "../models/User";
 
 export const traverseAndSanitize = (data: any, mongo = true): any => {
@@ -72,8 +72,9 @@ export const sanitizeQuery = <T extends Document<any, any, any> | Document<any, 
   return sanitizedData;
 };
 
-export const sanitizeUserQuery = <T extends Document<any, any, any>, Z extends Partial<IUserDocGoalsAndTasks>>(queryData: T, isGuest = false) => {
-  const data: Z = sanitizeQuery(queryData);
+export const sanitizeUserQuery = <T extends Document<any, any, any>, Z extends Partial<IUserDocGoalsAndTasks>>(queryData: T | Z, isGuest = false) => {
+  let data = queryData as Z;
+  if (queryData._id instanceof mongoose.Types.ObjectId) data = sanitizeQuery(queryData as T);
   delete data.password;
   delete data.googleId;
   if (isGuest) {

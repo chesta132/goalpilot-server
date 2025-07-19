@@ -4,11 +4,20 @@ import { updateByIdAndSanitize } from "../../utils/mongooseUtils";
 import User from "../../models/User";
 import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 import bcrypt from "bcrypt";
+import { resMissingFields } from "../../utils/resUtils";
+import { ErrorResponse } from "../../types/types";
 
 export const bindLocal = async (req: Request, res: Response) => {
   try {
     const user = req.user!;
     const { email, password } = req.body;
+    if (!email || !password) {
+      resMissingFields(res, "Email, Password");
+      return;
+    }
+    if (user.email) {
+      res.status(409).json({ code: "IS_BINDED", message: "Account is already binded to local", title: "Account already binded" } as ErrorResponse);
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const updatedUser = await updateByIdAndSanitize(

@@ -20,9 +20,11 @@ export type CodeAuthError =
   | "ACCESS_TOKEN_INVALID"
   | "TOKEN_BLACKLISTED"
   | "INVALID_ROLE"
-  | "NOT_VERIFIED"
   | "INVALID_VERIFY_EMAIL_TOKEN"
-  | "IS_VERIFIED";
+  | "NOT_VERIFIED"
+  | "IS_VERIFIED"
+  | "IS_BINDED"
+  | "NOT_BINDED";
 export type CodeFieldError =
   | "MISSING_FIELDS"
   | "INVALID_PASSWORD_FIELD"
@@ -30,7 +32,8 @@ export type CodeFieldError =
   | "INVALID_USERNAME_FIELD"
   | "INVALID_OTP_FIELD"
   | "INVALID_NEW_EMAIL_FIELD"
-  | "INVALID_NEW_PASSWORD_FIELD";
+  | "INVALID_NEW_PASSWORD_FIELD"
+  | "INVALID_OLD_PASSWORD_FIELD";
 export type CodeDatabaseError = "USER_NOT_FOUND" | "GOAL_NOT_FOUND" | "TASK_NOT_FOUND" | "OTP_NOT_FOUND" | "VALIDATION_ERROR" | "VERSION_CONFLICT";
 
 export type CodeError = CodeAuthError | CodeFieldError | CodeDatabaseError | "SERVER_ERROR";

@@ -5,6 +5,7 @@ import { createAndSanitize } from "../../utils/mongooseUtils";
 import { sendVerificationEmail } from "../../utils/email";
 import Verification from "../../models/Verification";
 import { ErrorResponse } from "../../types/types";
+import { resIsVerified } from "../../utils/resUtils";
 
 export const sendVerifyEmail = async (user: Express.User) => {
   const token = encrypt(`verify_${user.id}`);
@@ -15,7 +16,7 @@ export const sendVerifyEmail = async (user: Express.User) => {
 export const resendVerifyEmail = async (req: Request, res: Response) => {
   try {
     if (req.user?.verified) {
-      res.status(400).json({ message: "You has been verified", code: "IS_VERIFIED" } as ErrorResponse);
+      resIsVerified(res)
       return;
     }
     await sendVerifyEmail(req.user!);
