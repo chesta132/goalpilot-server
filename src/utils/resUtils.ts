@@ -42,6 +42,11 @@ export const resInvalidVerified = (res: Response) =>
     message: "Insufficient permissions, please verify you account",
     code: "NOT_VERIFIED",
   } as ErrorResponse);
+export const resInvalidOTP = (res: Response) =>
+  res.status(400).json({
+    message: "Invalid or expired OTP. Please request a new OTP code.",
+    code: "INVALID_OTP_FIELD",
+  } as ErrorResponse);
 
 // Field
 export const resMissingFields = (res: Response, fields: string) =>

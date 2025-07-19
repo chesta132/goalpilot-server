@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import handleError from "../../utils/handleError";
-import { findAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
+import { findOneAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
 import User from "../../models/User";
 import { ErrorResponse } from "../../types/types";
 import Verification from "../../models/Verification";
@@ -28,18 +28,16 @@ export const verifyEmail = async (req: Request, res: Response) => {
       return;
     }
 
-    const verification = await findAndSanitize(Verification, { key: token, type: "VERIFY" });
-    if (!verification || verification.length === 0) {
+    const verification = await findOneAndSanitize(Verification, { key: token, type: "VERIFY" });
+    if (!verification) {
       resInvalidToken();
       return;
     }
 
-    for (const verify of verification) {
-      if (verify.key === token) {
-        const updatedUser = await updateByIdAndSanitize(User, user.id, { verified: true }, { options: { new: true, runValidators: true } });
-        res.json(updatedUser);
-        return;
-      }
+    if (verification.key === token) {
+      const updatedUser = await updateByIdAndSanitize(User, user.id, { verified: true }, { options: { new: true, runValidators: true } });
+      res.json(updatedUser);
+      return;
     }
     resInvalidToken();
   } catch (err) {

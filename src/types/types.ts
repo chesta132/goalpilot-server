@@ -23,7 +23,13 @@ export type CodeAuthError =
   | "NOT_VERIFIED"
   | "INVALID_VERIFY_EMAIL_TOKEN"
   | "IS_VERIFIED";
-export type CodeFieldError = "MISSING_FIELDS" | "INVALID_PASSWORD_FIELD" | "INVALID_EMAIL_FIELD" | "INVALID_USERNAME_FIELD" | "INVALID_OTP_FIELD";
+export type CodeFieldError =
+  | "MISSING_FIELDS"
+  | "INVALID_PASSWORD_FIELD"
+  | "INVALID_EMAIL_FIELD"
+  | "INVALID_USERNAME_FIELD"
+  | "INVALID_OTP_FIELD"
+  | "INVALID_NEW_EMAIL_FIELD";
 export type CodeDatabaseError = "USER_NOT_FOUND" | "GOAL_NOT_FOUND" | "TASK_NOT_FOUND" | "OTP_NOT_FOUND" | "VALIDATION_ERROR" | "VERSION_CONFLICT";
 
 export type CodeError = CodeAuthError | CodeFieldError | CodeDatabaseError | "SERVER_ERROR";

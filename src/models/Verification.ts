@@ -1,6 +1,6 @@
 import mongoose, { Document, ObjectId } from "mongoose";
 
-type TypeVerification = "VERIFY" | "RESET_PASSWORD" | "OTP";
+type TypeVerification = "VERIFY" | "RESET_PASSWORD" | "CHANGE_EMAIL_OTP";
 
 export interface IVerification {
   userId: string | ObjectId;
