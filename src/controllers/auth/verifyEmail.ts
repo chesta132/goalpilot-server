@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import handleError from "../../utils/handleError";
-import { findOneAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
+import { findOneAndSanitize } from "../../utils/mongooseUtils";
 import User from "../../models/User";
 import { ErrorResponse } from "../../types/types";
 import Verification from "../../models/Verification";
-import { resInvalidAuth, resIsVerified, resMissingFields, resUserNotFound } from "../../utils/resUtils";
+import { resIsVerified, resMissingFields, resUserNotFound } from "../../utils/resUtils";
 import { decrypt } from "../../utils/cryptoUtils";
 import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 
@@ -16,21 +16,21 @@ export const verifyEmail = async (req: Request, res: Response) => {
     } as ErrorResponse);
 
   try {
-    const user = req.user!;
     const { token } = req.body;
     if (!token) {
       resMissingFields(res, "Token");
       return;
     }
-    if (user.verified) {
-      resIsVerified(res);
-      return;
-    }
 
     const tokenDecrypted = decrypt(token);
-    const tokenParsed = tokenDecrypted.slice(tokenDecrypted.indexOf("verify_") + 7);
-    if (tokenParsed !== user.id) {
-      resInvalidAuth(res);
+    const userId = tokenDecrypted.slice(tokenDecrypted.indexOf("verify_") + 7);
+    const user = await User.findById(userId);
+    if (!user) {
+      resInvalidToken();
+      return;
+    }
+    if (user.verified) {
+      resIsVerified(res);
       return;
     }
 
@@ -40,18 +40,15 @@ export const verifyEmail = async (req: Request, res: Response) => {
       return;
     }
 
-    if (verification.key === token) {
-      const updatedUser = await User.findByIdAndUpdate(user.id, { verified: true }, { options: { new: true, runValidators: true } });
-      if (!updatedUser) {
-        resUserNotFound(res);
-        return;
-      }
-      await Verification.findOneAndDelete({ key: token, type: "VERIFY", userId: user.id });
-      const sanitizedUser = sanitizeUserQuery(updatedUser);
-      res.json(sanitizedUser);
+    const updatedUser = await User.findByIdAndUpdate(user.id, { verified: true }, { new: true, runValidators: true });
+    if (!updatedUser) {
+      resUserNotFound(res);
       return;
     }
-    resInvalidToken();
+    await Verification.findOneAndDelete({ key: token, type: "VERIFY", userId: user.id });
+    const sanitizedUser = sanitizeUserQuery(updatedUser);
+    res.json(sanitizedUser);
+    return;
   } catch (err) {
     handleError(err, res);
   }

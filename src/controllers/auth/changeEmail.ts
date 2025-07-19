@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import handleError from "../../utils/handleError";
 import { ErrorResponse } from "../../types/types";
-import { findOneAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
+import { findOneAndSanitize } from "../../utils/mongooseUtils";
 import Verification from "../../models/Verification";
 import { resInvalidOTP, resMissingFields, resUserNotFound } from "../../utils/resUtils";
 import User from "../../models/User";

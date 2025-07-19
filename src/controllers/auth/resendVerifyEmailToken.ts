@@ -4,7 +4,6 @@ import { encrypt } from "../../utils/cryptoUtils";
 import { createAndSanitize } from "../../utils/mongooseUtils";
 import { sendVerificationEmail } from "../../utils/email";
 import Verification from "../../models/Verification";
-import { ErrorResponse } from "../../types/types";
 import { resIsVerified } from "../../utils/resUtils";
 
 export const sendVerifyEmail = async (user: Express.User) => {
