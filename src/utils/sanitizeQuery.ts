@@ -76,7 +76,6 @@ export const sanitizeQuery = <T extends Document<any, any, any> | Document<any, 
 export const sanitizeUserQuery = <T extends Document<any, any, any>, Z extends Partial<IUserDocGoalsAndTasks>>(queryData: T | Z, isGuest = false) => {
   let data = queryData as Z;
   if (queryData._id instanceof mongoose.Types.ObjectId) {
-    console.log(true);
     data = sanitizeQuery(queryData as T);
   }
   delete data.password;

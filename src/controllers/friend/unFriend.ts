@@ -1,31 +1,30 @@
 import { Request, Response } from "express";
 import handleError from "../../utils/handleError";
-import { resMissingFields, resUserNotFound } from "../../utils/resUtils";
+import { resFriendRequestNotFound, resInvalidAuth, resMissingFields, resUserNotFound } from "../../utils/resUtils";
 import { findAndSanitize, findByIdAndSanitize } from "../../utils/mongooseUtils";
 import Friend from "../../models/Friend";
-import User from "../../models/User";
 import { sanitizeFriendPopulatedUser, sanitizeFriendQuery } from "../../utils/sanitizeQuery";
 
 export const unFriend = async (req: Request, res: Response) => {
   try {
     const user = req.user!;
-    const { requestTo } = req.body;
-    if (!requestTo) {
-      resMissingFields(res, "Request to");
+    const { friendId } = req.body;
+    if (!friendId) {
+      resMissingFields(res, "Friend ID");
       return;
     }
 
-    if (!(await findByIdAndSanitize(User, requestTo))) {
-      resUserNotFound(res);
+    const friendDoc = await findByIdAndSanitize(Friend, friendId);
+    if (!friendDoc) {
+      resFriendRequestNotFound(res);
+      return;
+    }
+    if (friendDoc.userId1 !== user.id && friendDoc.userId2 !== user.id) {
+      resInvalidAuth(res);
       return;
     }
 
-    await Friend.findOneAndDelete({
-      $or: [
-        { userId1: user.id, userId2: requestTo },
-        { userId1: requestTo, userId2: user.id },
-      ],
-    });
+    await Friend.findByIdAndDelete(friendDoc.id);
 
     const allRequestsAndFriends = await findAndSanitize(
       Friend,
