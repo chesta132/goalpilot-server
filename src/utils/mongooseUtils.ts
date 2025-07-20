@@ -61,14 +61,14 @@ export const findOneAndSanitize = async <T extends Document<any, any, any>>(
 export const findAndSanitize = async <T extends Document<any, any, any>>(
   model: MongooseModel<T>,
   filter: RootFilterQuery<T>,
-  settings?: Settings<T>
+  settings?: Settings<T> & { returnArray?: boolean }
 ): Promise<T[] | null> => {
   const rawQuery = await model
     .find(filter, settings?.project, settings?.options)
     .populate(settings?.populate || [])
     .sort(settings?.sort, settings?.sortOptions);
 
-  if (rawQuery.length === 0) return null;
+  if (rawQuery.length === 0 && !settings?.returnArray) return null;
   return sanitizeQuery(rawQuery) as T[];
 };
 
@@ -112,13 +112,13 @@ export const updateManyAndSanitize = async <T extends Document<any, any, any>>(
   model: MongooseModel<T>,
   filter: RootFilterQuery<T>,
   update: UpdateQuery<T> | UpdateWithAggregationPipeline,
-  settings: { sanitize?: boolean; options: MongooseUpdateQueryOptions } & Omit<Settings<T>, "project" | "options">
+  settings: { sanitize?: boolean; options: MongooseUpdateQueryOptions } & Omit<Settings<T>, "project" | "options"> & { returnArray?: boolean }
 ): Promise<T[] | UpdateWriteOpResult | null> => {
   const rawQuery = await model.updateMany(filter, update, settings?.options).sort(settings?.sort, settings?.sortOptions);
 
   if (settings?.options && settings.options.sanitize === undefined) settings = { ...settings, sanitize: true };
 
-  if (!rawQuery) return null;
+  if (rawQuery.modifiedCount === 0 && !settings?.returnArray) return null;
   if (!settings.options.sanitize) return rawQuery;
   return (await findAndSanitize(model, filter, settings)) as T[];
 };

@@ -9,6 +9,6 @@ export const existingTasks = (tasks: ITaskDocument[]): ITaskDocument[] => {
   return tasks.filter((task) => !task.isRecycled);
 };
 
-export const existingGoalsAndTasks = (goals: IGoalDocTasks[]): IGoalDocument[] => {
-  return existingGoals(goals).map((goal) => ({ ...goal, tasks: existingTasks(goal.tasks as ITaskDocument[]) } as IGoalDocument));
+export const existingGoalsAndTasks = (goals: IGoalDocTasks[]): IGoalDocTasks[] => {
+  return existingGoals(goals).map((goal) => ({ ...goal, tasks: existingTasks(goal.tasks as ITaskDocument[]) } as IGoalDocTasks));
 };

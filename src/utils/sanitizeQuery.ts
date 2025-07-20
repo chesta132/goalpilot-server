@@ -1,5 +1,6 @@
 import mongoose, { Document, isValidObjectId } from "mongoose";
-import { IUserDocGoalsAndTasks } from "../models/User";
+import { IUserDocGoalsAndTasks, IUserDocument } from "../models/User";
+import { IFriendDocument, IFriendRes } from "../models/Friend";
 
 export const traverseAndSanitize = (data: any, mongo = true): any => {
   if (mongo && !data?._id && !Array.isArray(data)) {
@@ -74,7 +75,10 @@ export const sanitizeQuery = <T extends Document<any, any, any> | Document<any, 
 
 export const sanitizeUserQuery = <T extends Document<any, any, any>, Z extends Partial<IUserDocGoalsAndTasks>>(queryData: T | Z, isGuest = false) => {
   let data = queryData as Z;
-  if (queryData._id instanceof mongoose.Types.ObjectId) data = sanitizeQuery(queryData as T);
+  if (queryData._id instanceof mongoose.Types.ObjectId) {
+    console.log(true);
+    data = sanitizeQuery(queryData as T);
+  }
   delete data.password;
   delete data.googleId;
   if (isGuest) {
@@ -84,3 +88,42 @@ export const sanitizeUserQuery = <T extends Document<any, any, any>, Z extends P
   }
   return data;
 };
+
+export const sanitizeFriendQuery = <T extends Partial<IFriendDocument>>(queryData: T, ownerId: string): IFriendRes => {
+  let data = queryData as T & IFriendRes;
+  if (queryData._id instanceof mongoose.Types.ObjectId) data = sanitizeQuery(queryData as Document<any, any, any>);
+  if ((data.userId1 as string) === ownerId) {
+    data.user = data.userId1 as string;
+    data.friend = data.userId2 as string;
+    delete data.userId1;
+    delete data.userId2;
+  } else {
+    data.user = data.userId2 as string;
+    data.friend = data.userId1 as string;
+    delete data.userId1;
+    delete data.userId2;
+  }
+  return data as IFriendRes;
+};
+
+export const sanitizeFriendPopulatedUser = (data: Partial<IFriendDocument>[]) =>
+  data?.map((friend) => {
+    let data = friend;
+    const extractData = (user: Partial<IUserDocument>) => ({
+      id: user.id,
+      _id: user._id,
+      username: user.username,
+      fullName: user.fullName,
+      status: user.status,
+      lastActive: user.lastActive,
+    });
+    for (const key in friend) {
+      const value = friend[key as keyof IFriendDocument];
+      if (!["userId1", "userId2"].includes(key)) {
+        data[key as keyof IFriendDocument] = value;
+        continue;
+      }
+      data[key as keyof IFriendDocument] = extractData(value);
+    }
+    return data;
+  });

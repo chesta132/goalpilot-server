@@ -5,6 +5,7 @@ import { userRouter } from "./userRouter";
 import { goalRouter } from "./goalRouter";
 import { taskRouter } from "./taskRouter";
 import { aiRouter } from "./aiRouter";
+import { friendRouter } from "./friendRoutes";
 const router = Router();
 
 router.use("/auth", authRouter);
@@ -12,6 +13,7 @@ router.use("/user", userRouter);
 router.use("/goal", goalRouter);
 router.use("/task", taskRouter);
 router.use("/ai", aiRouter);
+router.use("/friend", friendRouter);
 
 router.get("/authz", authMiddleware, (req, res) => {
   res.json("Auth valid");

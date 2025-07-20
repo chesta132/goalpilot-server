@@ -35,8 +35,9 @@ export const resetPassword = async (req: Request, res: Response) => {
       return;
     }
     await Verification.findOneAndDelete({ key: token, type: "RESET_PASSWORD_OTP", userId: user.id });
+    const sanitizedUser = sanitizeUserQuery(updatedUser);
 
-    res.json({ ...sanitizeUserQuery(updatedUser), notification: "Successfully reset and update new password" });
+    res.json({ ...sanitizedUser, notification: "Successfully reset and update new password" });
   } catch (err) {
     handleError(err, res);
   }

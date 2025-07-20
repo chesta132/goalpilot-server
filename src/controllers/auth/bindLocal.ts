@@ -26,7 +26,8 @@ export const bindLocal = async (req: Request, res: Response) => {
       { email, password: hashedPassword },
       { options: { new: true, runValidators: true } }
     );
-    res.json({ ...sanitizeUserQuery(updatedUser!), notification: "Successfully link to local account" });
+    const sanitizedUser = sanitizeUserQuery(updatedUser!);
+    res.json({ ...sanitizedUser, notification: "Successfully link to local account" });
   } catch (err) {
     handleError(err, res);
   }

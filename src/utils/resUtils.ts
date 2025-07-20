@@ -10,6 +10,14 @@ export const resGoalNotFound = (res: Response) =>
   res.status(404).json({ title: "Goal not found", message: "Goal not found, please back to dashboard", code: "GOAL_NOT_FOUND" } as ErrorResponse);
 export const resTaskNotFound = (res: Response) =>
   res.status(404).json({ title: "Task not found", message: "Task not found, please back to dashboard", code: "TASK_NOT_FOUND" } as ErrorResponse);
+export const resFriendRequestNotFound = (res: Response) =>
+  res
+    .status(409)
+    .json({
+      message: "Friend request not found, please create new request",
+      code: "FRIEND_REQUEST_NOT_FOUND",
+      title: "Friend request not found",
+    } as ErrorResponse);
 
 // Invalid
 export const resInvalidAuth = (res: Response) =>
@@ -50,6 +58,12 @@ export const resInvalidOTP = (res: Response) =>
   } as ErrorResponse);
 export const resIsVerified = (res: Response) =>
   res.status(400).json({ message: "Your email has been verified", code: "IS_VERIFIED", title: "You has been verified" } as ErrorResponse);
+export const resIsFriend = (res: Response) =>
+  res
+    .status(409)
+    .json({ message: "Users have become friends with each other", code: "IS_FRIEND", title: "Users has become a friend" } as ErrorResponse);
+export const resFriendReqPending = (res: Response) =>
+  res.status(409).json({ message: "User already sent a friend request", code: "IS_PENDING", title: "Request already pending" } as ErrorResponse);
 
 // Field
 export const resMissingFields = (res: Response, fields: string) =>

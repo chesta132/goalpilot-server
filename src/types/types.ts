@@ -34,7 +34,16 @@ export type CodeFieldError =
   | "INVALID_NEW_EMAIL_FIELD"
   | "INVALID_NEW_PASSWORD_FIELD"
   | "INVALID_OLD_PASSWORD_FIELD";
-export type CodeDatabaseError = "USER_NOT_FOUND" | "GOAL_NOT_FOUND" | "TASK_NOT_FOUND" | "OTP_NOT_FOUND" | "VALIDATION_ERROR" | "VERSION_CONFLICT";
+export type CodeDatabaseError =
+  | "USER_NOT_FOUND"
+  | "GOAL_NOT_FOUND"
+  | "TASK_NOT_FOUND"
+  | "OTP_NOT_FOUND"
+  | "VALIDATION_ERROR"
+  | "VERSION_CONFLICT"
+  | "IS_FRIEND"
+  | "IS_PENDING"
+  | "FRIEND_REQUEST_NOT_FOUND";
 
 export type CodeError = CodeAuthError | CodeFieldError | CodeDatabaseError | "SERVER_ERROR";
 

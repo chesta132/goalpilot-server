@@ -32,8 +32,9 @@ export const changePassword = async (req: Request, res: Response) => {
       resUserNotFound(res);
       return;
     }
+    const sanitizedUser = sanitizeUserQuery(updatedUser);
 
-    res.json({ ...sanitizeUserQuery(updatedUser), notification: "Successfully update new password" });
+    res.json({ ...sanitizedUser, notification: "Successfully update new password" });
   } catch (err) {
     handleError(err, res);
   }

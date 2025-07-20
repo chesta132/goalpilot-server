@@ -12,12 +12,12 @@ export interface IVerification {
 
 export interface IVerificationDocument extends IVerification, Document {}
 
-const otpSchema = new mongoose.Schema<IVerificationDocument>({
+const verificationSchema = new mongoose.Schema<IVerificationDocument>({
   userId: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
   key: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
   deleteAt: { type: Date, default: () => new Date(Date.now() + 5 * 60 * 1000), index: { expires: "0s" } },
-  type: { type: String, default: "VERIFY" },
+  type: { type: String, default: "VERIFY", enum: ["VERIFY", "RESET_PASSWORD", "CHANGE_EMAIL_OTP", "RESET_PASSWORD_OTP"] },
 });
 
-export default mongoose.model<IVerificationDocument>("Verification", otpSchema);
+export default mongoose.model<IVerificationDocument>("Verification", verificationSchema);

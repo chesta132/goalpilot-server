@@ -42,8 +42,9 @@ export const changeEmail = async (req: Request, res: Response) => {
         return;
       }
       await Verification.findOneAndDelete({ key: token, type: "CHANGE_EMAIL_OTP", userId: user.id });
+      const sanitizedUser = sanitizeUserQuery(updatedUser);
 
-      res.json({ ...sanitizeUserQuery(updatedUser), notification: "Local email updated" });
+      res.json({ ...sanitizedUser, notification: "Local email updated" });
     };
 
     if (!user.verified) {
