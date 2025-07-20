@@ -66,3 +66,11 @@ export const resFriendReqPending = (res: Response) =>
 // Field
 export const resMissingFields = (res: Response, fields: string) =>
   res.status(422).json({ title: "Missing fields", message: `${fields} is required`, code: "MISSING_FIELDS" } as ErrorResponse);
+export const resSelfReq = (res: Response) =>
+  res
+    .status(409)
+    .json({
+      message: "Can not self request, please report this issue to GoalPilot Team",
+      title: "Self request detected",
+      code: "SELF_REQUEST",
+    } as ErrorResponse);

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import handleError from "../../utils/handleError";
-import { resFriendReqPending, resIsFriend, resMissingFields, resUserNotFound } from "../../utils/resUtils";
+import { resFriendReqPending, resIsFriend, resMissingFields, resSelfReq, resUserNotFound } from "../../utils/resUtils";
 import { createAndSanitize, findByIdAndSanitize, findOneAndSanitize } from "../../utils/mongooseUtils";
 import Friend from "../../models/Friend";
 import User from "../../models/User";
@@ -12,6 +12,11 @@ export const requestFriend = async (req: Request, res: Response) => {
     const { requestTo } = req.body;
     if (!requestTo) {
       resMissingFields(res, "Request to");
+      return;
+    }
+
+    if (user.id === requestTo) {
+      resSelfReq(res);
       return;
     }
 

@@ -33,7 +33,8 @@ export type CodeFieldError =
   | "INVALID_OTP_FIELD"
   | "INVALID_NEW_EMAIL_FIELD"
   | "INVALID_NEW_PASSWORD_FIELD"
-  | "INVALID_OLD_PASSWORD_FIELD";
+  | "INVALID_OLD_PASSWORD_FIELD"
+  | "SELF_REQUEST";
 export type CodeDatabaseError =
   | "USER_NOT_FOUND"
   | "GOAL_NOT_FOUND"
