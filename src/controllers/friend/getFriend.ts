@@ -10,8 +10,8 @@ export const resSanitizedAllFriend = async (res: Response, userId: string, statu
     { $or: [{ userId1: userId }, { userId2: userId }] },
     { populate: ["userId1", "userId2"], returnArray: true }
   );
-  const sanitizeUser = sanitizeFriendPopulatedUser(allRequestsAndFriends!);
-  const sanitizedFriend = sanitizeUser.map((items) => sanitizeFriendQuery(items, userId));
+  const sanitizedUser = sanitizeFriendPopulatedUser(allRequestsAndFriends!);
+  const sanitizedFriend = sanitizedUser.map((items) => sanitizeFriendQuery(items, userId));
   return res.status(status).json(sanitizedFriend);
 };
 

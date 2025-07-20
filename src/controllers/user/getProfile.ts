@@ -22,7 +22,7 @@ export const getProfile = async (req: Request, res: Response) => {
     }
 
     const isOwner = userPopulated.id === user.id;
-    const sanitizedQuery = sanitizeUserQuery(userPopulated, !isOwner);
+    const sanitizedQuery = sanitizeUserQuery(userPopulated, { isGuest: !isOwner });
 
     const goals = sanitizedQuery.goals ? existingGoalsAndTasks(sanitizedQuery.goals) : undefined;
     res.status(200).json({ ...sanitizedQuery, goals });

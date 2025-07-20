@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { capitalEachWords } from "./stringManip";
+import { capitalEachWords } from "./manipulate";
 
 export const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
