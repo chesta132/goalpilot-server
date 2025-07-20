@@ -11,13 +11,11 @@ export const resGoalNotFound = (res: Response) =>
 export const resTaskNotFound = (res: Response) =>
   res.status(404).json({ title: "Task not found", message: "Task not found, please back to dashboard", code: "TASK_NOT_FOUND" } as ErrorResponse);
 export const resFriendRequestNotFound = (res: Response) =>
-  res
-    .status(409)
-    .json({
-      message: "Friend request not found, please create new request",
-      code: "FRIEND_REQUEST_NOT_FOUND",
-      title: "Friend request not found",
-    } as ErrorResponse);
+  res.status(409).json({
+    message: "Friend request not found, please create new request",
+    code: "FRIEND_REQUEST_NOT_FOUND",
+    title: "Friend request not found",
+  } as ErrorResponse);
 
 // Invalid
 export const resInvalidAuth = (res: Response) =>

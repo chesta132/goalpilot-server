@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import handleError from "../../utils/handleError";
 import { resFriendReqPending, resIsFriend, resMissingFields, resUserNotFound } from "../../utils/resUtils";
-import { createAndSanitize, findAndSanitize, findByIdAndSanitize, findOneAndSanitize } from "../../utils/mongooseUtils";
+import { createAndSanitize, findByIdAndSanitize, findOneAndSanitize } from "../../utils/mongooseUtils";
 import Friend from "../../models/Friend";
 import User from "../../models/User";
-import { sanitizeFriendPopulatedUser, sanitizeFriendQuery } from "../../utils/sanitizeQuery";
+import { resSanitizedAllFriend } from "./getFriend";
 
 export const requestFriend = async (req: Request, res: Response) => {
   try {
@@ -39,14 +39,7 @@ export const requestFriend = async (req: Request, res: Response) => {
     }
 
     await createAndSanitize(Friend, { userId1: user.id, userId2: requestTo });
-    const allRequestsAndFriends = await findAndSanitize(
-      Friend,
-      { $or: [{ userId1: user.id }, { userId2: user.id }] },
-      { populate: ["userId1", "userId2"], returnArray: true }
-    );
-    const sanitizeUser = sanitizeFriendPopulatedUser(allRequestsAndFriends!);
-    const sanitizedFriend = sanitizeUser ? sanitizeUser.map((items) => sanitizeFriendQuery(items, user.id)) : [];
-    res.status(201).json(sanitizedFriend);
+    await resSanitizedAllFriend(res, user.id, 201);
   } catch (err) {
     handleError(err, res);
   }

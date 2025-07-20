@@ -19,8 +19,6 @@ export type TUser = {
   level: number;
   points: number;
   tasksCompleted: number;
-  sessions: number;
-  refreshToken: string;
   verified: boolean;
 };
 

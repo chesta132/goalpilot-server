@@ -83,6 +83,8 @@ export const sanitizeUserQuery = <T extends Document<any, any, any>, Z extends P
   if (isGuest) {
     delete data.gmail;
     delete data.email;
+    delete data.verified;
+    delete data.createdAt;
     if (data.goals && data.goals.length > 0) data.goals = data.goals.filter((goal) => goal.isPublic);
   }
   return data;
