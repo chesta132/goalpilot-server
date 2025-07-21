@@ -14,12 +14,13 @@ export const sendVerifyEmail = async (user: Express.User) => {
 
 export const resendVerifyEmail = async (req: Request, res: Response) => {
   try {
-    if (req.user?.verified) {
-      resIsVerified(res)
+    const user = req.user!;
+    if (user.verified) {
+      resIsVerified(res);
       return;
     }
-    await sendVerifyEmail(req.user!);
-    res.status(200).send();
+    await sendVerifyEmail(user);
+    res.status(204).send();
   } catch (err) {
     handleError(err, res);
   }

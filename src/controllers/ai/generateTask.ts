@@ -50,18 +50,17 @@ export const generateTask = async (req: Request, res: Response) => {
       goal.tasks.push(...newTask.map((task) => task.id));
       await goal.save();
       const goalPopulated = { ...sanitizeQuery(goal), tasks: sanitizeQuery([...newTask, ...goal.tasks] as ITaskDocument[]) };
-      res.status(200).json({ ...goalPopulated, notification: `${newTask.length} tasks created` });
+      res.status(201).json({ ...goalPopulated, notification: `${newTask.length} tasks created` });
       return;
     }
 
-    const prevTasks = await findAndSanitize(Task, { goalId: goal.id }, { project: { task: 1, description: 1, difficulty: 1, _id: 0 } });
-    const fPrevTasks = prevTasks && prevTasks.filter((task) => !task.isRecycled);
-    const stringifyedPrevTasks = prevTasks && prevTasks.length > 0 && JSON.stringify(fPrevTasks);
+    const prevTasks = await findAndSanitize(Task, { goalId: goal.id, isRecycled: false }, { project: { task: 1, description: 1, difficulty: 1, _id: 0 } });
+    const stringifyedPrevTasks = prevTasks && prevTasks.length > 0 && JSON.stringify(prevTasks);
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: `Please match the language of my query.\nQuery: ${req.body.query}.${
+      contents: `Please match the language of my query.\nQuery: ${query}.${
         stringifyedPrevTasks ? `\nPrevious tasks: \n${stringifyedPrevTasks}` : ""
       }`,
       config: {
@@ -115,7 +114,7 @@ export const generateTask = async (req: Request, res: Response) => {
     });
 
     const goalPopulated = { ...sanitizeQuery(goal), tasks: sanitizeQuery([...newTask, ...goal.tasks] as ITaskDocument[]) };
-    res.status(200).json({ ...goalPopulated, notification: `${newTask.length} tasks created` });
+    res.status(201).json({ ...goalPopulated, notification: `${newTask.length} tasks created` });
   } catch (err) {
     handleError(err, res);
   }

@@ -4,8 +4,7 @@ import { updateByIdAndSanitize } from "../../utils/mongooseUtils";
 import User from "../../models/User";
 import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 import bcrypt from "bcrypt";
-import { resMissingFields } from "../../utils/resUtils";
-import { ErrorResponse } from "../../types/types";
+import { resIsBinded, resMissingFields } from "../../utils/resUtils";
 
 export const bindLocal = async (req: Request, res: Response) => {
   try {
@@ -16,7 +15,8 @@ export const bindLocal = async (req: Request, res: Response) => {
       return;
     }
     if (user.email) {
-      res.status(409).json({ code: "IS_BINDED", message: "Account is already binded to local", title: "Account already binded" } as ErrorResponse);
+      resIsBinded(res);
+      return;
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

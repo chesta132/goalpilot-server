@@ -17,6 +17,11 @@ export const resetPassword = async (req: Request, res: Response) => {
       return;
     }
 
+    if (!user.verified) {
+      res.status(406).json({ message: "User email must be verified first", code: "INVALID_NEW_PASSWORD_FIELD" } as ErrorResponse);
+      return;
+    }
+
     const password = await bcrypt.hash(newPassword, 10);
 
     if (await bcrypt.compare(newPassword, user.password)) {

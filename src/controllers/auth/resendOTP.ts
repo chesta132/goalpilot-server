@@ -15,7 +15,7 @@ export const resendOTP = async (req: Request, res: Response) => {
     const createAndSend = async (type: IVerification["type"]) => {
       await createAndSanitize(Verification, { key: otp, type, userId: user.id });
       await sendOTPEmail(user.email, otp, user.fullName);
-      res.status(200).send();
+      res.status(204).send();
     };
 
     switch (type) {
@@ -27,7 +27,7 @@ export const resendOTP = async (req: Request, res: Response) => {
         await createAndSend("RESET_PASSWORD_OTP");
         return;
     }
-    res.status(409).json({ message: "Invalid type please send a valid type", code: "INVALID_OTP_FIELD" } as ErrorResponse);
+    res.status(406).json({ message: "Invalid type please send a valid type", code: "INVALID_OTP_FIELD" } as ErrorResponse);
   } catch (err) {
     handleError(err, res);
   }

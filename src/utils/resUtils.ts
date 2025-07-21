@@ -62,6 +62,14 @@ export const resIsFriend = (res: Response) =>
     .json({ message: "Users have become friends with each other", code: "IS_FRIEND", title: "Users has become a friend" } as ErrorResponse);
 export const resFriendReqPending = (res: Response) =>
   res.status(409).json({ message: "User already sent a friend request", code: "IS_PENDING", title: "Request already pending" } as ErrorResponse);
+export const resIsBinded = (res: Response) =>
+  res.status(409).json({ code: "IS_BINDED", message: "Account is already binded to local", title: "Account already binded" } as ErrorResponse);
+export const resNotBinded = (res: Response) =>
+  res.status(409).json({
+    message: "Account is not bind to local yet, please bind to local first",
+    code: "NOT_BINDED",
+    title: "Account is not binded",
+  } as ErrorResponse);
 
 // Field
 export const resMissingFields = (res: Response, fields: string) =>

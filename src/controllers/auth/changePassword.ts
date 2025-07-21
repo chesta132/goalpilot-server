@@ -16,7 +16,7 @@ export const changePassword = async (req: Request, res: Response) => {
       return;
     }
     if (!(await bcrypt.compare(oldPassword, user.password))) {
-      res.status(403).json({ message: "Old password is wrong", code: "INVALID_OLD_PASSWORD_FIELD" } as ErrorResponse);
+      res.status(409).json({ message: "Old password is wrong", code: "INVALID_OLD_PASSWORD_FIELD" } as ErrorResponse);
       return;
     }
 

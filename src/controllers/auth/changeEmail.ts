@@ -3,7 +3,7 @@ import handleError from "../../utils/handleError";
 import { ErrorResponse } from "../../types/types";
 import { findOneAndSanitize } from "../../utils/mongooseUtils";
 import Verification from "../../models/Verification";
-import { resInvalidOTP, resMissingFields, resUserNotFound } from "../../utils/resUtils";
+import { resInvalidOTP, resMissingFields, resNotBinded, resUserNotFound } from "../../utils/resUtils";
 import User from "../../models/User";
 import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 
@@ -16,11 +16,8 @@ export const changeEmail = async (req: Request, res: Response) => {
       return;
     }
     if (!user.email) {
-      res.status(409).json({
-        message: "Account is not bind to local yet, please bind to local first",
-        code: "NOT_BINDED",
-        title: "Account is not binded",
-      } as ErrorResponse);
+      resNotBinded(res);
+      return;
     }
     if (user.email === newEmail) {
       res.status(409).json({ message: "New email and old email can not same", code: "INVALID_NEW_EMAIL_FIELD" } as ErrorResponse);
@@ -34,6 +31,7 @@ export const changeEmail = async (req: Request, res: Response) => {
     const updateEmail = async () => {
       const updatedUser = await User.findByIdAndUpdate(
         user.id,
+        // verified comment: new email is auto verified because google mail always valid
         { email: newEmail, verified: user?.gmail === newEmail },
         { new: true, runValidators: true }
       );
@@ -43,12 +41,12 @@ export const changeEmail = async (req: Request, res: Response) => {
       }
       await Verification.findOneAndDelete({ key: token, type: "CHANGE_EMAIL_OTP", userId: user.id });
       const sanitizedUser = sanitizeUserQuery(updatedUser);
-
-      res.json({ ...sanitizedUser, notification: "Local email updated" });
+      return sanitizedUser;
     };
 
     if (!user.verified) {
-      await updateEmail();
+      const updatedUser = await updateEmail();
+      res.json({ ...updatedUser, notification: "Local email updated" });
       return;
     }
 
@@ -58,7 +56,8 @@ export const changeEmail = async (req: Request, res: Response) => {
       return;
     }
 
-    await updateEmail();
+    const updatedUser = await updateEmail();
+    res.json({ ...updatedUser, notification: "Local email updated" });
   } catch (err) {
     handleError(err, res);
   }

@@ -17,18 +17,17 @@ export const signup = async (req: Request, res: Response) => {
       resMissingFields(res, "Username, email, password, and full name");
       return;
     }
-    if (await User.findOne({ email })) {
-      res.status(460).json({ code: "INVALID_EMAIL_FIELD", message: "Email is already in use" } as ErrorResponse);
-      return;
-    } else if (await User.findOne({ gmail: email })) {
-      res.status(460).json({
-        code: "INVALID_EMAIL_FIELD",
-        message: "Email is already bind with google account, please bind on account settings",
-      } as ErrorResponse);
-      return;
-    }
-    if (await User.findOne({ username })) {
-      res.status(460).json({ code: "INVALID_USERNAME_FIELD", message: "Username is already in use" } as ErrorResponse);
+
+    const potentialUser = await User.findOne({ $or: [{ email }, { gmail: email }, { username }] });
+    if (potentialUser) {
+      if (potentialUser?.email === email) res.status(460).json({ code: "INVALID_EMAIL_FIELD", message: "Email is already in use" } as ErrorResponse);
+      else if (potentialUser?.gmail === email)
+        res.status(460).json({
+          code: "INVALID_EMAIL_FIELD",
+          message: "Email is already bind with google account, please bind on account settings",
+        } as ErrorResponse);
+      else if (potentialUser.username === username)
+        res.status(460).json({ code: "INVALID_USERNAME_FIELD", message: "Username is already in use" } as ErrorResponse);
       return;
     }
 
