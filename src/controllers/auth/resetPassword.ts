@@ -7,6 +7,7 @@ import Verification from "../../models/Verification";
 import User from "../../models/User";
 import bcrypt from "bcrypt";
 import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
+import { sendCredentialChanges } from "../../utils/email";
 
 export const resetPassword = async (req: Request, res: Response) => {
   try {
@@ -41,6 +42,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     }
     await Verification.findOneAndDelete({ key: token, type: "RESET_PASSWORD_OTP", userId: user.id });
     const sanitizedUser = sanitizeUserQuery(updatedUser);
+    await sendCredentialChanges(user.email, user.fullName);
 
     res.json({ ...sanitizedUser, notification: "Successfully reset and update new password" });
   } catch (err) {

@@ -1,6 +1,6 @@
 import Goal, { IGoalDocTasks } from "../../models/Goal";
 import Task from "../../models/Task";
-import User from "../../models/User";
+import User, { IUserDocGoalsAndTasks } from "../../models/User";
 import { Response, Request } from "express";
 import handleError from "../../utils/handleError";
 import { resUserNotFound } from "../../utils/resUtils";
@@ -9,16 +9,18 @@ import { findByIdAndSanitize } from "../../utils/mongooseUtils";
 export const deleteUser = async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
-    const user = await findByIdAndSanitize(User, userId, { populate: { path: "goals", populate: { path: "tasks" } } });
+    const user = (await findByIdAndSanitize(User, userId, {
+      populate: { path: "goals", populate: { path: "tasks" } },
+    })) as IUserDocGoalsAndTasks | null;
     if (!user) {
       resUserNotFound(res);
       return;
     }
 
-    const goalsAndTasksId = (user!.goals! as IGoalDocTasks[]).reduce(
+    const goalsAndTasksId = user.goals.reduce(
       (acc: { goalsId: string[]; tasksId: string[] }, goal) => {
-        acc.goalsId.push(goal._id!.toString());
-        acc.tasksId.push(...goal.tasks.map((task) => task._id!.toString()));
+        acc.goalsId.push(goal.id);
+        acc.tasksId.push(...goal.tasks.map((task) => task.id));
         return acc;
       },
       { goalsId: [], tasksId: [] }

@@ -26,11 +26,12 @@ export const deleteGoal = async (req: Request, res: Response) => {
     }
 
     if (goal.tasks && goal.tasks.length > 0) {
-      const taskIds = goal.tasks.map((task) => task);
+      const taskIds = goal.tasks;
       await updateManyAndSanitize(
         Task,
         { _id: { $in: taskIds } },
-        { $set: { isRecycled: true, deleteAt: new Date(Date.now() + 24 * 60 * 60 * 1000) } },
+        // prevent actual delete goal without throw em to trash/recycle
+        { $set: { deleteAt: new Date(Date.now() + 24 * 60 * 60 * 1000) } },
         { options: { new: true, runValidators: true, sanitize: false } }
       );
     }

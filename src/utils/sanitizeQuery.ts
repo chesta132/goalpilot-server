@@ -76,7 +76,7 @@ export const sanitizeQuery = <T extends Document<any, any, any> | Document<any, 
 
 export const sanitizeUserQuery = <T extends Document<any, any, any>, Z extends Partial<IUserDocGoalsAndTasks>>(
   queryData: T | Z,
-  options?: { isGuest?: boolean; deleteGoals?: boolean }
+  options?: { isGuest?: boolean }
 ) => {
   let data = omit(queryData as Z, ["__v", "password", "googleId"]);
   if (queryData._id instanceof mongoose.Types.ObjectId) {
@@ -88,7 +88,6 @@ export const sanitizeUserQuery = <T extends Document<any, any, any>, Z extends P
     delete data.verified;
     delete data.createdAt;
     if (data.goals && data.goals.length > 0) data.goals = data.goals.filter((goal) => goal.isPublic);
-    if (options.deleteGoals) delete data.goals;
   }
   return data;
 };
@@ -109,25 +108,3 @@ export const sanitizeFriendQuery = <T extends Partial<IFriendDocument>>(queryDat
   }
   return data as IFriendRes;
 };
-
-export const sanitizeFriendPopulatedUser = (data: Partial<IFriendDocument>[]) =>
-  data?.map((friend) => {
-    let data = friend;
-    for (const key in friend) {
-      const value = friend[key as keyof IFriendDocument];
-      if (!["userId1", "userId2"].includes(key)) {
-        data[key as keyof IFriendDocument] = value;
-        continue;
-      }
-      data[key as keyof IFriendDocument] = pick(value as Partial<IUserDocument>, [
-        "id",
-        "_id",
-        "username",
-        "fullName",
-        "status",
-        "lastActive",
-        "__v",
-      ]);
-    }
-    return data;
-  });

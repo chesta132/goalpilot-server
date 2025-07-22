@@ -6,6 +6,7 @@ import { updateByIdAndSanitize } from "../../utils/mongooseUtils";
 import User from "../../models/User";
 import bcrypt from "bcrypt";
 import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
+import { sendCredentialChanges } from "../../utils/email";
 
 export const changePassword = async (req: Request, res: Response) => {
   try {
@@ -33,6 +34,7 @@ export const changePassword = async (req: Request, res: Response) => {
       return;
     }
     const sanitizedUser = sanitizeUserQuery(updatedUser);
+    await sendCredentialChanges(user.email, user.fullName);
 
     res.json({ ...sanitizedUser, notification: "Successfully update new password" });
   } catch (err) {

@@ -6,6 +6,7 @@ import Verification from "../../models/Verification";
 import { resInvalidOTP, resMissingFields, resNotBinded, resUserNotFound } from "../../utils/resUtils";
 import User from "../../models/User";
 import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
+import { sendCredentialChanges } from "../../utils/email";
 
 export const changeEmail = async (req: Request, res: Response) => {
   try {
@@ -46,7 +47,8 @@ export const changeEmail = async (req: Request, res: Response) => {
 
     if (!user.verified) {
       const updatedUser = await updateEmail();
-      res.json({ ...updatedUser, notification: "Local email updated" });
+      await sendCredentialChanges(user.email, user.fullName, "email");
+      res.json({ ...updatedUser, notification: "Local email successfully updated" });
       return;
     }
 
@@ -57,7 +59,9 @@ export const changeEmail = async (req: Request, res: Response) => {
     }
 
     const updatedUser = await updateEmail();
-    res.json({ ...updatedUser, notification: "Local email updated" });
+    await sendCredentialChanges(user.email, user.fullName, "email");
+
+    res.json({ ...updatedUser, notification: "Local email successfully updated" });
   } catch (err) {
     handleError(err, res);
   }

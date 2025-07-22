@@ -28,8 +28,8 @@ export const searchUser = async (req: Request, res: Response) => {
       { returnArray: true, options: { limit, skip } }
     )) as IUserDocument[];
     const sanitizedProfile = profileFound?.map((profil) => {
-      const partialProfile = omit(profil, ["goalsCompleted", "level", "points", "tasksCompleted"]);
-      return sanitizeUserQuery(partialProfile as IUserDocument, { isGuest: true, deleteGoals: true });
+      const partialProfile = omit(profil, ["goalsCompleted", "level", "points", "tasksCompleted", "goals"]);
+      return sanitizeUserQuery(partialProfile as IUserDocument, { isGuest: true });
     });
     res.json(buildResLimit(sanitizedProfile, limit, skip));
   } catch (err) {

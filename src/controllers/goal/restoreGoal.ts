@@ -25,17 +25,12 @@ export const restoreGoal = async (req: Request, res: Response) => {
       return;
     }
 
-    await updateManyAndSanitize(
-      Task,
-      { _id: { $in: goal.tasks } },
-      { isRecycled: false, deleteAt: null },
-      { options: { new: true, runValidators: true, sanitize: false } }
-    );
+    await updateManyAndSanitize(Task, { _id: { $in: goal.tasks } }, { deleteAt: null }, { options: { runValidators: true, sanitize: false } });
     await updateByIdAndSanitize(
       Goal,
       goal.id,
       { isRecycled: false, deleteAt: null },
-      { options: { new: true, runValidators: true }, populate: { path: "tasks" } }
+      { options: { new: true, runValidators: true }, populate: { path: "tasks", match: { isRecycled: false } } }
     );
 
     res.status(200).json({ notification: `${goal.title} restored` });

@@ -24,8 +24,8 @@ export const getProfile = async (req: Request, res: Response) => {
       return;
     }
 
-    const isOwner = userPopulated.id === user.id;
-    const sanitizedQuery = sanitizeUserQuery(userPopulated, { isGuest: !isOwner });
+    const isGuest = userPopulated.id !== user.id;
+    const sanitizedQuery = sanitizeUserQuery(userPopulated, { isGuest });
 
     res.status(200).json(sanitizedQuery);
   } catch (err) {

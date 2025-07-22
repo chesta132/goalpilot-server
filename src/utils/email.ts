@@ -59,6 +59,30 @@ export const sendVerificationEmail = async (email: string, token: string, name: 
   }
 };
 
+/**
+ * @param credentials Default is "password"
+ */
+export const sendCredentialChanges = async (email: string, name: string, credentials = "password") => {
+  try {
+    await transporter.sendMail({
+      from: "GoalPilot Team",
+      to: email,
+      subject: `GoalPilot ${capitalEachWords(credentials)} Has Been Changed`,
+      html: emailTemplate({
+        title: `${capitalEachWords(credentials)} change`,
+        subtitle: "",
+        message: "",
+        name,
+        infoMessage: `Dear ${capitalEachWords(
+          name
+        )},\n\nYour GoalPilot account ${credentials.toLowerCase()} has been successfully updated. If you did not make this change, please contact GoalPilot support immediately.\n\nFor your security, please do not share your login credentials with anyone, including GoalPilot employees.`,
+      }),
+    });
+  } catch (error) {
+    console.error("Email error", error);
+  }
+};
+
 export function emailTemplate(props: {
   title: string;
   subtitle: string;

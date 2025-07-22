@@ -32,7 +32,7 @@ export const editTask = async (req: Request, res: Response) => {
       return;
     }
 
-    let completedAt = undefined;
+    let completedAt;
     if (isCompleted === true && !taskUser.isCompleted) {
       completedAt = new Date();
     } else if (taskUser.isCompleted && isCompleted === false) {
