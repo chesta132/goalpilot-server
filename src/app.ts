@@ -38,6 +38,7 @@ app.use(
     message: {
       title: "Too many requests",
       message: "Too many requests, please try again later",
+      code: "TOO_MUCH_REQUEST",
     },
   })
 );

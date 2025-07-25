@@ -20,6 +20,7 @@ export type TUser = {
   points: number;
   tasksCompleted: number;
   verified: boolean;
+  timeToAllowSendEmail: Date | null;
 };
 
 export interface IUserDocument extends TUser, Document {}
@@ -120,6 +121,10 @@ const UserSchema = new mongoose.Schema<IUserDocument>({
   verified: {
     type: Boolean,
     default: false,
+  },
+  timeToAllowSendEmail: {
+    type: Date,
+    default: null,
   },
 });
 

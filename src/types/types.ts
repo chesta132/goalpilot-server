@@ -28,8 +28,7 @@ export type CodeFieldError =
   | "INVALID_OTP_FIELD"
   | "INVALID_NEW_EMAIL_FIELD"
   | "INVALID_NEW_PASSWORD_FIELD"
-  | "INVALID_OLD_PASSWORD_FIELD"
-  | "SELF_REQUEST";
+  | "INVALID_OLD_PASSWORD_FIELD";
 export type CodeDatabaseError =
   | "USER_NOT_FOUND"
   | "GOAL_NOT_FOUND"
@@ -40,8 +39,9 @@ export type CodeDatabaseError =
   | "IS_FRIEND"
   | "IS_PENDING"
   | "FRIEND_REQUEST_NOT_FOUND";
+export type CodeClientError = "TOO_MUCH_REQUEST" | "SELF_REQUEST";
 
-export type CodeError = CodeAuthError | CodeFieldError | CodeDatabaseError | "SERVER_ERROR";
+export type CodeError = CodeAuthError | CodeFieldError | CodeDatabaseError | CodeClientError | "SERVER_ERROR";
 
 export type ErrorResponse = {
   title: string;

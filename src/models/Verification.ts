@@ -1,6 +1,6 @@
 import mongoose, { Document, ObjectId } from "mongoose";
 
-type TypeVerification = "VERIFY" | "RESET_PASSWORD" | "CHANGE_EMAIL_OTP" | "RESET_PASSWORD_OTP";
+type TypeVerification = "VERIFY" | "RESET_PASSWORD" | "CHANGE_EMAIL_OTP" | "RESET_PASSWORD_OTP" | "DELETE_ACCOUNT_OTP";
 
 export interface IVerification {
   userId: string | ObjectId;
@@ -17,7 +17,7 @@ const verificationSchema = new mongoose.Schema<IVerificationDocument>({
   key: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
   deleteAt: { type: Date, default: () => new Date(Date.now() + 5 * 60 * 1000), index: { expires: "0s" } },
-  type: { type: String, default: "VERIFY", enum: ["VERIFY", "RESET_PASSWORD", "CHANGE_EMAIL_OTP", "RESET_PASSWORD_OTP"] },
+  type: { type: String, default: "VERIFY", enum: ["VERIFY", "RESET_PASSWORD", "CHANGE_EMAIL_OTP", "RESET_PASSWORD_OTP", "DELETE_ACCOUNT_OTP"] },
 });
 
 export default mongoose.model<IVerificationDocument>("Verification", verificationSchema);
