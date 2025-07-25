@@ -99,8 +99,7 @@ passport.use(
     async (req, accessToken, refreshToken, profile, done) => {
       try {
         const user = req.user!;
-        const updatedUser = await updateByIdAndSanitize(
-          User,
+        const updatedUser = await User.findByIdAndUpdate(
           user.id,
           { googleId: profile.id, gmail: profile.emails![0].value, verified: user.verified || user.email === profile.emails![0].value },
           { options: { new: true, runValidators: true } }

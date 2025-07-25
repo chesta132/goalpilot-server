@@ -31,7 +31,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
     if (!payload) {
       // Check if refresh token exists in database
-      const user = await findByIdAndSanitize(User, refreshPayload.userId as string);
+      const user = await User.findById(User, refreshPayload.userId as string);
       if (!user) {
         resInvalidRefToken(res);
         return;
@@ -49,7 +49,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
       return next();
     }
 
-    const user = await findByIdAndSanitize(User, payload.userId as string);
+    const user = await User.findById(User, refreshPayload.userId as string);
     if (!user) {
       resUserNotFound(res);
       return;

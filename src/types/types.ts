@@ -1,9 +1,4 @@
-import { Request } from "express";
-import { IUserDocument } from "../models/User";
-
-export interface AuthRequest extends Request {
-  user: IUserDocument;
-}
+import { Document, ObjectId } from "mongoose";
 
 export interface JWTPayload {
   userId: string | unknown;
@@ -54,3 +49,10 @@ export type ErrorResponse = {
   code: CodeError;
   details?: any;
 };
+
+export type SanitizedData<T> = Omit<
+  {
+    [K in keyof T]: T[K] extends ObjectId ? string : T[K];
+  },
+  keyof Document
+> & { id: string; _id: string };

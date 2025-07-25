@@ -46,7 +46,7 @@ export const generateTask = async (req: Request, res: Response) => {
           rewardPoints: rewardPoints,
         };
       }) as ITaskDocument[];
-      const newTask = await insertManyAndSanitize(Task, newTaskData);
+      const newTask = await Task.insertMany(newTaskData);
       goal.tasks.push(...newTask.map((task) => task.id));
       await goal.save();
       const goalPopulated = { ...sanitizeQuery(goal), tasks: sanitizeQuery([...newTask, ...goal.tasks] as ITaskDocument[]) };
@@ -54,7 +54,11 @@ export const generateTask = async (req: Request, res: Response) => {
       return;
     }
 
-    const prevTasks = await findAndSanitize(Task, { goalId: goal.id, isRecycled: false }, { project: { task: 1, description: 1, difficulty: 1, _id: 0 } });
+    const prevTasks = await findAndSanitize(
+      Task,
+      { goalId: goal.id, isRecycled: false },
+      { project: { task: 1, description: 1, difficulty: 1, _id: 0 } }
+    );
     const stringifyedPrevTasks = prevTasks && prevTasks.length > 0 && JSON.stringify(prevTasks);
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -104,7 +108,7 @@ export const generateTask = async (req: Request, res: Response) => {
         targetDate: goal.targetDate,
       };
     });
-    const newTask = await insertManyAndSanitize(Task, newTaskData);
+    const newTask = await Task.insertMany(newTaskData);
     goal.tasks.push(...newTask.map((task) => task.id));
     await goal.save();
     await createAndSanitize(AiCache, {
