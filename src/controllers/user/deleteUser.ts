@@ -6,6 +6,7 @@ import handleError from "../../utils/handleError";
 import { resInvalidOTP, resMissingFields, resUserNotFound } from "../../utils/resUtils";
 import { findByIdAndSanitize, findOneAndSanitize } from "../../utils/mongooseUtils";
 import Verification from "../../models/Verification";
+import { CLIENT_URL } from "../../app";
 
 export const deleteUser = async (req: Request, res: Response) => {
   try {
@@ -40,7 +41,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     await Goal.deleteMany({ _id: { $in: goalsAndTasksId.goalsId } });
     await User.findByIdAndDelete(user._id);
 
-    res.redirect(`${process.env.CLIENT_URL_DEV}/signin`);
+    res.redirect(`${CLIENT_URL}/signin`);
   } catch (err) {
     handleError(err, res);
   }

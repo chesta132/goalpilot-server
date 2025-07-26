@@ -12,6 +12,7 @@ import { resendOTP } from "../controllers/auth/resendOTP";
 import { changeEmail } from "../controllers/auth/changeEmail";
 import { resetPassword } from "../controllers/auth/resetPassword";
 import { changePassword } from "../controllers/auth/changePassword";
+import { CLIENT_URL } from "../app";
 const authRouter = Router();
 
 authRouter.post("/signup", signup);
@@ -20,7 +21,7 @@ authRouter.post("/signin", signin);
 authRouter.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 authRouter.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: `${process.env.CLIENT_URL_DEV}/signin`, failureFlash: false, failureMessage: false }),
+  passport.authenticate("google", { failureRedirect: `${CLIENT_URL}/signin`, failureFlash: false, failureMessage: false }),
   googleCallback
 );
 
@@ -34,7 +35,7 @@ authRouter.put("/bind-local", bindLocal);
 authRouter.get("/google-bind", passport.authenticate("google-bind", { scope: ["profile", "email"] }));
 authRouter.get(
   "/google-bind/callback",
-  passport.authenticate("google-bind", { failureRedirect: `${process.env.CLIENT_URL_DEV}`, failureFlash: false, failureMessage: false }),
+  passport.authenticate("google-bind", { failureRedirect: `${CLIENT_URL}`, failureFlash: false, failureMessage: false }),
   googleCallback
 );
 

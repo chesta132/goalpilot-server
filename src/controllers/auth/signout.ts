@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import handleError from "../../utils/handleError";
 import { resInvalidRefToken, resUserNotFound } from "../../utils/resUtils";
 import { updateByIdAndSanitize } from "../../utils/mongooseUtils";
+import { CLIENT_URL } from "../../app";
 
 export const signout = async (req: Request, res: Response) => {
   try {
@@ -32,7 +33,7 @@ export const signout = async (req: Request, res: Response) => {
 
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
-    res.redirect(`${process.env.CLIENT_URL_DEV}/signin`);
+    res.redirect(`${CLIENT_URL}/signin`);
   } catch (error) {
     handleError(error, res);
   }

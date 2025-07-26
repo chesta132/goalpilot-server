@@ -1,6 +1,7 @@
 import { Response, Request } from "express";
 import { createAccessToken, createRefreshToken } from "../../utils/tokenUtils";
 import { resAccessToken, resRefreshToken } from "../../utils/resCookie";
+import { CLIENT_URL } from "../../app";
 
 export const googleCallback = (req: Request, res: Response) => {
   const user = req.user!;
@@ -9,5 +10,5 @@ export const googleCallback = (req: Request, res: Response) => {
 
   res.cookie("accessToken", accessToken, resAccessToken);
   res.cookie("refreshToken", refreshToken, resRefreshToken);
-  res.redirect(`${process.env.CLIENT_URL_DEV}/`);
+  res.redirect(`${CLIENT_URL}/`);
 };

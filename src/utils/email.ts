@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { capitalEachWords } from "./manipulate";
+import { CLIENT_URL } from "../app";
 
 export const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -48,7 +49,7 @@ export const sendVerificationEmail = async (email: string, token: string, name: 
         infoMessage: `You have requested to verify your email address for your GoalPilot account. To complete this action, please click the button below.\n\nFor your security, please do not share this email or its link with anyone, including GoalPilot employees.`,
         button: {
           buttonText: "Verify your email",
-          buttonHref: `${process.env.CLIENT_URL_DEV}/verify/email/?token=${token}`,
+          buttonHref: `${CLIENT_URL}/verify/email/?token=${token}`,
         },
       }),
     });
@@ -413,9 +414,9 @@ export function emailTemplate(props: {
                 </div>
                 
                 <div class="footer-links">
-                    <a href="${process.env.CLIENT_URL_DEV}/about">About Us</a>
-                    <a href="${process.env.CLIENT_URL_DEV}/privacy">Privacy Policy</a>
-                    <a href="${process.env.CLIENT_URL_DEV}/terms">Terms of Service</a>
+                    <a href="${CLIENT_URL}/about">About Us</a>
+                    <a href="${CLIENT_URL}/privacy">Privacy Policy</a>
+                    <a href="${CLIENT_URL}/terms">Terms of Service</a>
                 </div>
                 
                 <div class="footer-contact">

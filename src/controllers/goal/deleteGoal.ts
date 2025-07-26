@@ -42,7 +42,7 @@ export const deleteGoal = async (req: Request, res: Response) => {
       { options: { new: true, runValidators: true } }
     );
 
-    res.status(200).json({ _id: goal._id, id: goal.id, notification: `${goal.title} and ${goal.tasks.length} tasks deleted` });
+    res.status(200).json({ _id: goal._id, id: goal.id, notification: `${goal.title} deleted` });
   } catch (err) {
     handleError(err, res);
   }

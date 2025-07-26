@@ -18,8 +18,8 @@ export const getUser = async (req: Request, res: Response) => {
         populate: {
           path: "goals",
           match: { isRecycled: false },
-          options: { sort: { _id: 1 } },
-          populate: { path: "tasks", match: { isRecycled: false }, options: { sort: { _id: 1 } } },
+          options: { sort: { _id: -1 } },
+          populate: { path: "tasks", match: { isRecycled: false }, options: { sort: { _id: -1 } } },
         },
       }
     )) as IUserDocGoalsAndTasks | null;

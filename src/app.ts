@@ -13,6 +13,8 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 
+export const CLIENT_URL = process.env.CLIENT_URL_DEV;
+
 connectDB();
 const app = express();
 app.set("trust proxy", ["loopback", "linklocal"]);
@@ -26,7 +28,7 @@ app.use(express.json());
 app.use(
   cors({
     credentials: true,
-    origin: process.env.CLIENT_URL_DEV,
+    origin: CLIENT_URL,
   })
 );
 app.use(
