@@ -2,7 +2,6 @@ import Goal from "../../models/Goal";
 import Task from "../../models/Task";
 import { Response, Request } from "express";
 import handleError from "../../utils/handleError";
-import { generateReward } from "../../utils/levelingUtils";
 import { resGoalNotFound, resInvalidAuth, resMissingFields } from "../../utils/resUtils";
 import { createAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
@@ -25,14 +24,12 @@ export const createTask = async (req: Request, res: Response) => {
       return;
     }
 
-    const rewardPoints = generateReward(req.body);
     const newTask = await createAndSanitize(Task, {
       goalId: goal.id,
       task,
       description,
       targetDate,
       difficulty,
-      rewardPoints,
     });
 
     await updateByIdAndSanitize(

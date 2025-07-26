@@ -16,8 +16,6 @@ export type TUser = {
   status: UserStatus;
   goals: ObjectId[] | IGoalDocument[];
   goalsCompleted: number;
-  level: number;
-  points: number;
   tasksCompleted: number;
   verified: boolean;
   timeToAllowSendEmail: Date;
@@ -99,16 +97,6 @@ const UserSchema = new mongoose.Schema<IUserDocument>({
     },
   ],
   goalsCompleted: {
-    type: Number,
-    default: 0,
-    min: 0,
-  },
-  level: {
-    type: Number,
-    default: 1,
-    min: 1,
-  },
-  points: {
     type: Number,
     default: 0,
     min: 0,

@@ -3,7 +3,6 @@ import handleError from "../../utils/handleError";
 import Goal from "../../models/Goal";
 import { resGoalNotFound, resInvalidAuth, resMissingFields, resTaskNotFound } from "../../utils/resUtils";
 import Task from "../../models/Task";
-import { generateReward } from "../../utils/levelingUtils";
 import { findByIdAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
 
 export const editTask = async (req: Request, res: Response) => {
@@ -39,7 +38,6 @@ export const editTask = async (req: Request, res: Response) => {
       completedAt = null;
     }
 
-    const rewardPoints = generateReward(req.body);
 
     const updatedTask = await updateByIdAndSanitize(
       Task,
@@ -50,7 +48,6 @@ export const editTask = async (req: Request, res: Response) => {
         isCompleted,
         targetDate,
         difficulty,
-        rewardPoints,
         completedAt,
       },
       { options: { new: true, runValidators: true } }

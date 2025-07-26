@@ -44,7 +44,7 @@ export type CodeClientError = "TOO_MUCH_REQUEST" | "SELF_REQUEST";
 export type CodeError = CodeAuthError | CodeFieldError | CodeDatabaseError | CodeClientError | "SERVER_ERROR";
 
 export type ErrorResponse = {
-  title: string;
+  title?: string;
   message: string;
   code: CodeError;
   details?: any;

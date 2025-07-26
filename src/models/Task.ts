@@ -10,7 +10,6 @@ export interface ITask {
   targetDate: Date | null;
   difficulty: TaskDifficulty;
   completedAt: Date | null;
-  rewardPoints: number;
   createdAt: Date;
   isRecycled: boolean;
   deleteAt: Date | null;
@@ -55,12 +54,6 @@ const taskSchema = new mongoose.Schema<ITaskDocument>({
   completedAt: {
     type: Date,
     default: null,
-  },
-  rewardPoints: {
-    type: Number,
-    required: true,
-    default: 100,
-    max: 800,
   },
   createdAt: {
     type: Date,

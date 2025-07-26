@@ -3,7 +3,6 @@ import { createAndSanitize, findAndSanitize, findOneAndSanitize, insertManyAndSa
 import Goal from "../../models/Goal";
 import crypto from "crypto";
 import AiCache from "../../models/AiCache";
-import { generateReward } from "../../utils/levelingUtils";
 import Task, { ITaskDocument } from "../../models/Task";
 import { GoogleGenAI, Type } from "@google/genai";
 import handleError from "../../utils/handleError";
@@ -36,16 +35,12 @@ export const generateTask = async (req: Request, res: Response) => {
 
     const aiCache = await findOneAndSanitize(AiCache, { queryHash: queryHashed });
     if (aiCache) {
-      const newTaskData = aiCache.aiResponse.map((resp) => {
-        const rewardPoints = generateReward(req.body);
-        return {
-          task: resp.task,
-          description: resp.description,
-          difficulty: resp.difficulty,
-          goalId: goal._id,
-          rewardPoints: rewardPoints,
-        };
-      }) as ITaskDocument[];
+      const newTaskData = aiCache.aiResponse.map((resp) => ({
+        task: resp.task,
+        description: resp.description,
+        difficulty: resp.difficulty,
+        goalId: goal._id,
+      })) as ITaskDocument[];
       const newTask = await Task.insertMany(newTaskData);
       goal.tasks.push(...newTask.map((task) => task.id));
       await goal.save();
@@ -97,17 +92,13 @@ export const generateTask = async (req: Request, res: Response) => {
     });
 
     const responseData = JSON.parse(response.text || "[]");
-    const newTaskData = responseData.map((resp: any) => {
-      const rewardPoints = generateReward(resp);
-      return {
-        task: resp.task,
-        description: resp.description,
-        difficulty: resp.difficulty,
-        goalId: goal.id,
-        rewardPoints,
-        targetDate: goal.targetDate,
-      };
-    });
+    const newTaskData = responseData.map((resp: any) => ({
+      task: resp.task,
+      description: resp.description,
+      difficulty: resp.difficulty,
+      goalId: goal.id,
+      targetDate: goal.targetDate,
+    }));
     const newTask = await Task.insertMany(newTaskData);
     goal.tasks.push(...newTask.map((task) => task.id));
     await goal.save();
