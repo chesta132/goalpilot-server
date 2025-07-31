@@ -38,7 +38,6 @@ export const editTask = async (req: Request, res: Response) => {
       completedAt = null;
     }
 
-
     const updatedTask = await updateByIdAndSanitize(
       Task,
       taskUser.id,
@@ -52,6 +51,10 @@ export const editTask = async (req: Request, res: Response) => {
       },
       { options: { new: true, runValidators: true } }
     );
+    if (!updatedTask) {
+      resTaskNotFound(res);
+      return;
+    }
 
     res.status(200).json({ ...updatedTask, notification: `${taskUser.task} updated` });
   } catch (err) {

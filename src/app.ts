@@ -13,7 +13,7 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 
-export const CLIENT_URL = process.env.CLIENT_URL_DEV;
+export const CLIENT_URL = process.env.CLIENT_URL_DEV_LOCAL;
 
 connectDB();
 const app = express();
@@ -33,8 +33,8 @@ app.use(
 );
 app.use(
   rateLimit({
-    windowMs: 10 * 60 * 1000,
-    limit: 150,
+    windowMs: 60 * 1000,
+    limit: 100,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -60,6 +60,6 @@ const PORT = parseInt(process.env.PORT || "5000");
 const HOST = process.env.HOST || "0.0.0.0";
 
 app.listen(PORT, HOST, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
   console.log(`Accessible on network via http:${HOST}:${PORT} (or your actual network IP)`);
 });
