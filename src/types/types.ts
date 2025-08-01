@@ -57,3 +57,14 @@ export type SanitizedData<T> = Omit<
   },
   keyof Document
 > & { id: string; _id: string };
+
+export type Combination<T extends string, U extends string> = `${T}_${U}`;
+
+export type SearchType =
+  | "ALL"
+  | "PROFILES"
+  | "GOALS"
+  | "TASKS"
+  | Combination<"PROFILES", "GOALS">
+  | Combination<"PROFILES", "TASKS">
+  | Combination<"GOALS", "TASKS">;

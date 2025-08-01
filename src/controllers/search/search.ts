@@ -4,7 +4,7 @@ import { resMissingFields, resUserNotFound } from "../../utils/resUtils";
 import { findAndSanitize, findByIdAndSanitize } from "../../utils/mongooseUtils";
 import User, { IUserDocGoalsAndTasks, TUser } from "../../models/User";
 import { omit } from "../../utils/manipulate";
-import { ErrorResponse, SanitizedData } from "../../types/types";
+import { ErrorResponse, SanitizedData, SearchType } from "../../types/types";
 
 export const buildPagination = (data: any[], limit = 31, offset = 0) => {
   const isNext = data.length >= limit - 1;
@@ -16,8 +16,8 @@ export const search = async (req: Request, res: Response) => {
   try {
     const { id: userId } = req.user!;
     const { query, offset, type } = req.query;
-    if (!query) {
-      resMissingFields(res, "Query");
+    if (!query || !type) {
+      resMissingFields(res, "Query, Type");
       return;
     }
     const limit = 2;
@@ -67,29 +67,34 @@ export const search = async (req: Request, res: Response) => {
       return { profileFound, sanitizedProfile };
     };
 
-    switch (type?.toString().toUpperCase()) {
-      case "PROFILES":
+    const formattedType = type.toString().toUpperCase() as SearchType;
+
+    type ProfileTemplate = {
+      profile: Omit<IUserDocGoalsAndTasks, "goals">[];
+      isNext: boolean;
+      nextOffset: number | null;
+    };
+    const resHandler = {
+      ALL: async (profileTemplate: ProfileTemplate) => res.json({ ...profileTemplate, goals: filteredGoals, tasks: filteredTasks }),
+      PROFILES: async (profileTemplate: ProfileTemplate) => res.json(profileTemplate),
+      PROFILES_GOALS: async (profileTemplate: ProfileTemplate) => res.json({ ...profileTemplate, goals: filteredGoals }),
+      PROFILES_TASKS: async (profileTemplate: ProfileTemplate) => res.json({ ...profileTemplate, tasks: filteredTasks }),
+      GOALS_TASKS: () => res.json({ goals: filteredGoals, tasks: filteredTasks }),
+      GOALS: () => res.json({ goals: filteredGoals }),
+      TASKS: () => res.json({ tasks: filteredTasks }),
+    };
+
+    if (resHandler[formattedType]) {
+      if (formattedType.includes("PROFILES") || formattedType === "ALL") {
         const { profileFound, sanitizedProfile } = await getProfiles();
         const buildedProfilePage = buildPagination(profileFound, limit, skip);
-        res.json({ ...buildedProfilePage, profile: sanitizedProfile });
-        return;
-      case "GOALS_TASKS":
-        res.json({ goals: filteredGoals, tasks: filteredTasks });
-        return;
-      case "GOALS":
-        res.json({ goals: filteredGoals });
-        return;
-      case "TASKS":
-        res.json({ tasks: filteredTasks });
-        return;
-      case "ALL":
-        const { profileFound: profileFoundAll, sanitizedProfile: sanitizedProfileAll } = await getProfiles();
-        const buildedProfilePageAll = buildPagination(profileFoundAll, limit, skip);
-        res.json({ ...buildedProfilePageAll, profile: sanitizedProfileAll, goals: filteredGoals, tasks: filteredTasks });
-        return;
-      default:
-        res.status(406).json({ message: "Invalid type please send a valid type", code: "INVALID_SEARCH_TYPE" } as ErrorResponse);
-        return;
+        const profileTemplate = { ...buildedProfilePage, profile: sanitizedProfile };
+        resHandler[formattedType](profileTemplate);
+      } else {
+        resHandler[formattedType as "GOALS" | "GOALS_TASKS" | "TASKS"]();
+      }
+    } else {
+      res.status(406).json({ message: "Invalid type please send a valid type", code: "INVALID_SEARCH_TYPE" } as ErrorResponse);
     }
   } catch (err) {
     handleError(err, res);
