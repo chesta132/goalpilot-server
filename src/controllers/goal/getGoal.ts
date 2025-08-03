@@ -29,7 +29,7 @@ export const getGoal = async (req: Request, res: Response) => {
     const tasks = goal.tasks as ITaskDocument[];
     const tasksId = tasks.map((task) => task._id);
     const completedTasks = tasks.filter((task) => task.isCompleted);
-    const progress = (completedTasks.length / tasks.length) * 100;
+    const progress = completedTasks.length === 0 ? 0 : (completedTasks.length / tasks.length) * 100;
     let status;
     let completedAt = goal.completedAt;
     if (progress === 100) {

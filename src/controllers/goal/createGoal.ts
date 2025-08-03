@@ -2,7 +2,8 @@ import Goal, { IGoal } from "../../models/Goal";
 import { Response, Request } from "express";
 import handleError from "../../utils/handleError";
 import { resMissingFields } from "../../utils/resUtils";
-import { createAndSanitize } from "../../utils/mongooseUtils";
+import { createAndSanitize, updateByIdAndSanitize } from "../../utils/mongooseUtils";
+import User from "../../models/User";
 
 export const createGoal = async (req: Request, res: Response) => {
   try {
@@ -21,6 +22,12 @@ export const createGoal = async (req: Request, res: Response) => {
       isPublic,
       color,
       status,
+    });
+
+    await updateByIdAndSanitize(User, user.id, {
+      $push: {
+        goals: { $each: [newGoal.id], $position: 0 },
+      },
     });
 
     res.status(201).json({ ...newGoal, notification: `${newGoal.title} created` });
