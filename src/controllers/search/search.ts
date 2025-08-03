@@ -15,12 +15,12 @@ export const buildPagination = (data: any[], limit = 31, offset = 0) => {
 export const search = async (req: Request, res: Response) => {
   try {
     const { id: userId } = req.user!;
-    const { query, offset, type } = req.query;
-    if (!query || !type) {
-      resMissingFields(res, "Query, Type");
+    const { query, offset, type, recycled } = req.query;
+    if (!query || !type || !recycled) {
+      resMissingFields(res, "Query, Type, Recycled");
       return;
     }
-    const limit = 2;
+    const limit = 30;
     const skip = parseInt(offset?.toString() || "0");
     const userProject = {
       gmail: 0,
@@ -34,9 +34,15 @@ export const search = async (req: Request, res: Response) => {
       googleId: 0,
       role: 0,
     } as Record<Partial<keyof TUser>, 0>;
+    const userPopulate = {
+      path: "goals",
+      match: { isRecycled: JSON.parse(recycled.toString()) },
+      options: { sort: { _id: -1 } },
+      populate: { path: "tasks", match: { isRecycled: JSON.parse(recycled.toString()) }, options: { sort: { _id: -1 } } },
+    };
 
     const user = (await findByIdAndSanitize(User, userId, {
-      populate: { path: "goals", populate: "tasks" },
+      populate: userPopulate,
       project: userProject,
     })) as SanitizedData<IUserDocGoalsAndTasks>;
     if (!user) {
@@ -60,7 +66,7 @@ export const search = async (req: Request, res: Response) => {
           returnArray: true,
           options: { limit, skip },
           project: userProject,
-          populate: { path: "goals", populate: "tasks" },
+          populate: userPopulate,
         }
       )) as IUserDocGoalsAndTasks[];
       const sanitizedProfile = profileFound?.map((profil) => omit(profil, ["goals"]));
@@ -70,32 +76,40 @@ export const search = async (req: Request, res: Response) => {
     const formattedType = type.toString().toUpperCase() as SearchType;
 
     type ProfileTemplate = {
-      profile: Omit<IUserDocGoalsAndTasks, "goals">[];
+      profiles: Omit<IUserDocGoalsAndTasks, "goals">[];
       isNext: boolean;
       nextOffset: number | null;
     };
-    const resHandler = {
-      ALL: async (profileTemplate: ProfileTemplate) => res.json({ ...profileTemplate, goals: filteredGoals, tasks: filteredTasks }),
-      PROFILES: async (profileTemplate: ProfileTemplate) => res.json(profileTemplate),
-      PROFILES_GOALS: async (profileTemplate: ProfileTemplate) => res.json({ ...profileTemplate, goals: filteredGoals }),
-      PROFILES_TASKS: async (profileTemplate: ProfileTemplate) => res.json({ ...profileTemplate, tasks: filteredTasks }),
-      GOALS_TASKS: () => res.json({ goals: filteredGoals, tasks: filteredTasks }),
-      GOALS: () => res.json({ goals: filteredGoals }),
-      TASKS: () => res.json({ tasks: filteredTasks }),
+
+    let dataToReturn = {} as Record<string, any>;
+    const termsHandler = {
+      ALL: (profileTemplate: ProfileTemplate) => (dataToReturn = { ...profileTemplate, goals: filteredGoals, tasks: filteredTasks }),
+      PROFILES: (profileTemplate: ProfileTemplate) => (dataToReturn = profileTemplate),
+      GOALS: () => (dataToReturn.goals = filteredGoals),
+      TASKS: () => (dataToReturn.tasks = filteredTasks),
     };
 
-    if (resHandler[formattedType]) {
-      if (formattedType.includes("PROFILES") || formattedType === "ALL") {
+    if (formattedType.split("_").some((type) => !Object.keys(termsHandler).includes(type))) {
+      res.status(406).json({
+        message: "Invalid filter please send a valid type of filter",
+        code: "INVALID_SEARCH_TYPE",
+        details: `${type} is not a valid type`,
+        title: "Invalid filter",
+      } as ErrorResponse);
+      return;
+    }
+
+    for (const [key, value] of Object.entries(termsHandler)) {
+      if (formattedType.split("_").includes(key)) {
         const { profileFound, sanitizedProfile } = await getProfiles();
         const buildedProfilePage = buildPagination(profileFound, limit, skip);
-        const profileTemplate = { ...buildedProfilePage, profile: sanitizedProfile };
-        resHandler[formattedType](profileTemplate);
-      } else {
-        resHandler[formattedType as "GOALS" | "GOALS_TASKS" | "TASKS"]();
+        const profileTemplate = { ...buildedProfilePage, profiles: sanitizedProfile };
+        value(profileTemplate);
+        if (key === "ALL") break;
       }
-    } else {
-      res.status(406).json({ message: "Invalid type please send a valid type", code: "INVALID_SEARCH_TYPE" } as ErrorResponse);
     }
+    res.json(dataToReturn);
+    return;
   } catch (err) {
     handleError(err, res);
   }
