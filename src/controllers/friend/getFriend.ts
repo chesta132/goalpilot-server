@@ -4,7 +4,7 @@ import { findAndSanitize } from "../../utils/mongooseUtils";
 import { sanitizeFriendQuery } from "../../utils/sanitizeQuery";
 import Friend from "../../models/Friend";
 
-export const resSanitizedAllFriend = async (res: Response, userId: string, status: number) => {
+export const resSanitizedAllFriend = async (res: Response, userId: string, status: number, notification?: string) => {
   const select = "_id username fullName status lastActive";
   const allRequestsAndFriends = await findAndSanitize(
     Friend,
@@ -18,7 +18,7 @@ export const resSanitizedAllFriend = async (res: Response, userId: string, statu
     }
   );
   const sanitizedFriend = allRequestsAndFriends?.map((items) => sanitizeFriendQuery(items, userId));
-  return res.status(status).json(sanitizedFriend);
+  return res.status(status).json({ data: sanitizedFriend, notification });
 };
 
 export const getFriend = async (req: Request, res: Response) => {

@@ -4,6 +4,8 @@ import { resFriendRequestNotFound, resInvalidAuth, resMissingFields } from "../.
 import { findByIdAndSanitize } from "../../utils/mongooseUtils";
 import Friend from "../../models/Friend";
 import { resSanitizedAllFriend } from "./getFriend";
+import { IUserDocument } from "../../models/User";
+import { capitalEachWords } from "../../utils/manipulate";
 
 export const unFriend = async (req: Request, res: Response) => {
   try {
@@ -24,8 +26,17 @@ export const unFriend = async (req: Request, res: Response) => {
       return;
     }
 
-    await Friend.findByIdAndDelete(friendDoc.id);
-    await resSanitizedAllFriend(res, user.id, 200);
+    const deletedFriend = await Friend.findByIdAndDelete(friendDoc.id);
+    if (!deletedFriend) {
+      resFriendRequestNotFound(res);
+      return;
+    }
+    await resSanitizedAllFriend(
+      res,
+      user.id,
+      200,
+      `You and ${capitalEachWords((friendDoc.userId2 as Partial<IUserDocument>).fullName || "")} are no longer friends`
+    );
   } catch (err) {
     handleError(err, res);
   }

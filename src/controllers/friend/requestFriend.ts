@@ -5,6 +5,7 @@ import { createAndSanitize, findByIdAndSanitize, findOneAndSanitize } from "../.
 import Friend from "../../models/Friend";
 import User from "../../models/User";
 import { resSanitizedAllFriend } from "./getFriend";
+import { capitalEachWords } from "../../utils/manipulate";
 
 export const requestFriend = async (req: Request, res: Response) => {
   try {
@@ -20,7 +21,9 @@ export const requestFriend = async (req: Request, res: Response) => {
       return;
     }
 
-    if (!(await findByIdAndSanitize(User, requestTo))) {
+    const userAsFriend = await findByIdAndSanitize(User, requestTo);
+
+    if (!userAsFriend) {
       resUserNotFound(res);
       return;
     }
@@ -44,7 +47,7 @@ export const requestFriend = async (req: Request, res: Response) => {
     }
 
     await createAndSanitize(Friend, { userId1: user.id, userId2: requestTo });
-    await resSanitizedAllFriend(res, user.id, 201);
+    await resSanitizedAllFriend(res, user.id, 201, `Request sent to ${capitalEachWords(userAsFriend.fullName)}`);
   } catch (err) {
     handleError(err, res);
   }

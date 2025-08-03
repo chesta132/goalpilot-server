@@ -1,7 +1,7 @@
 import mongoose, { Document, isValidObjectId } from "mongoose";
 import { IUserDocGoals, IUserDocGoalsAndTasks, IUserDocument } from "../models/User";
 import { IFriendDocument, IFriendRes } from "../models/Friend";
-import { omit, pick } from "./manipulate";
+import { omit } from "./manipulate";
 import { SanitizedData } from "../types/types";
 import { IGoalDocTasks } from "../models/Goal";
 
@@ -95,13 +95,13 @@ export const sanitizeFriendQuery = <T extends Partial<IFriendDocument>>(queryDat
   let data = omit(queryData, ["__v"]) as T & IFriendRes;
   if (queryData._id instanceof mongoose.Types.ObjectId) data = sanitizeQuery(queryData as Document<any, any, any>) as T & IFriendRes;
   if ((data.userId1 as string) === ownerId) {
-    data.user = data.userId1 as string;
-    data.friend = data.userId2 as string;
+    data.user = data.userId2 as string;
+    data.friend = data.userId1 as string;
     delete data.userId1;
     delete data.userId2;
   } else {
-    data.user = data.userId2 as string;
-    data.friend = data.userId1 as string;
+    data.user = data.userId1 as string;
+    data.friend = data.userId2 as string;
     delete data.userId1;
     delete data.userId2;
   }
