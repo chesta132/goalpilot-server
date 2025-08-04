@@ -1,6 +1,5 @@
 import User from "../../models/User";
 import { Response, Request } from "express";
-import { sanitizeUserQuery } from "../../utils/sanitizeQuery";
 import handleError from "../../utils/handleError";
 import { resMissingFields, resUserNotFound } from "../../utils/resUtils";
 import { findOneAndSanitize } from "../../utils/mongooseUtils";
@@ -17,17 +16,21 @@ export const getProfile = async (req: Request, res: Response) => {
     const userPopulated = await findOneAndSanitize(
       User,
       { username },
-      { populate: { path: "goals", match: { isRecycled: false }, populate: { path: "tasks", match: { isRecycled: false } } } }
+      {
+        project: { email: 0, gmail: 0, verified: 0, createdAt: 0, password: 0, googleId: 0, timeToAllowSendEmail: 0 },
+        populate: {
+          path: "goals",
+          match: { isRecycled: false, isPublic: true },
+          populate: { path: "tasks", match: { isRecycled: false } },
+        },
+      }
     );
     if (!userPopulated) {
       resUserNotFound(res);
       return;
     }
 
-    const isGuest = userPopulated.id !== user.id;
-    const sanitizedQuery = sanitizeUserQuery(userPopulated, { isGuest });
-
-    res.status(200).json(sanitizedQuery);
+    res.status(200).json(userPopulated);
   } catch (err) {
     handleError(err, res);
   }

@@ -54,7 +54,7 @@ export const search = async (req: Request, res: Response) => {
     const tasks = goals.flatMap((goal) => goal.tasks);
     goals.map((goal) => (goal.tasks = []));
 
-    const regexQuery = new RegExp(query.toString());
+    const regexQuery = new RegExp(query.toString(), "i");
     const filteredGoals = goals.filter((goal) => regexQuery.test(goal.title));
     const filteredTasks = tasks.filter((task) => regexQuery.test(task.task));
 

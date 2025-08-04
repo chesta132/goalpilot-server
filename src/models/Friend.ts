@@ -2,21 +2,22 @@ import mongoose, { Document, ObjectId } from "mongoose";
 import { IUserDocument } from "./User";
 
 type StatusFriend = "PENDING" | "FRIEND";
+type User = ObjectId | string | Partial<IUserDocument>;
 
-export interface IFriend {
-  userId1: ObjectId | string | Partial<IUserDocument>;
-  userId2: ObjectId | string | Partial<IUserDocument>;
+export interface IFriend<T = User> {
+  userId1: T;
+  userId2: T;
   createdAt: Date;
   updatedAt: Date;
   status: StatusFriend;
 }
 
-export interface IFriendRes extends Omit<IFriend, "userId1" | "userId2"> {
-  user: string;
-  friend: string;
+export interface IFriendRes<T = User> extends Omit<IFriend, "userId1" | "userId2"> {
+  user: IFriend<T>["userId1"];
+  friend: IFriend<T>["userId1"];
 }
 
-export interface IFriendDocument extends IFriend, Document {}
+export interface IFriendDocument<T = User> extends IFriend<T>, Document {}
 
 const friendSchema = new mongoose.Schema<IFriendDocument>(
   {
