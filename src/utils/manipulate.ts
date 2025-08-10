@@ -57,7 +57,7 @@ export const capitalWord = (inputString: string, scissors?: string | number) => 
  * @returns The object with only picked properties.
  */
 export const pick = <T extends Record<string, any>, Z extends (keyof T)[]>(data: T, picks?: Z): Pick<T, Z[number]> => {
-  let pickedData = data;
+  let pickedData = data.toObject ? { ...data.toObject() } : { ...data };
   if (picks)
     for (const pick of Object.keys(data)) {
       if (!picks.includes(pick as keyof Object)) {
@@ -75,7 +75,7 @@ export const pick = <T extends Record<string, any>, Z extends (keyof T)[]>(data:
  * @returns The object with omitted properties.
  */
 export const omit = <T extends Record<string, any>, Z extends (keyof T)[]>(data: T, omits?: Z): Omit<T, Z[number]> => {
-  let omittedData = data;
+  let omittedData = data.toObject ? { ...data.toObject() } : { ...data };
   if (omits)
     for (const omit of omits) {
       delete omittedData[omit];

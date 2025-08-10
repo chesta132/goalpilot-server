@@ -78,7 +78,7 @@ export const sanitizeUserQuery = <T extends Partial<IUserDocGoalsAndTasks> | Par
 ) => {
   let data = omit(queryData, ["__v", "password", "googleId"]);
   if (queryData._id instanceof mongoose.Types.ObjectId) {
-    data = sanitizeQuery(queryData as Document<any, any, any>) as Omit<T, "__v" | "password" | "googleId">;
+    data = sanitizeQuery(data as Document<any, any, any>) as Omit<T, "__v" | "password" | "googleId">;
   }
   if (options?.isGuest) {
     delete data.gmail;
